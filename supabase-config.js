@@ -171,6 +171,8 @@ const SupabaseDB = {
                 return parts.length > 1 ? parts[1] : null;
             }))].filter(date => date !== null);
             
+            console.log(`📅 Found ${data.length} match_history records, ${uniqueDates.length} unique session dates:`, uniqueDates);
+            
             return { data: uniqueDates, error: null };
         } catch (error) {
             console.error('Error fetching session dates:', error);

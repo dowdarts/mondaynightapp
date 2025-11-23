@@ -311,6 +311,9 @@ class DartScoreTracker {
         if (supabaseReady) {
             // Load saved data for today only
             await this.loadFromDatabase();
+            
+            // Populate session history dropdown on startup
+            await this.populateSessionDateDropdown();
         }
         
         this.init();
@@ -1136,14 +1139,30 @@ class DartScoreTracker {
     }
 
     async populateSessionDateDropdown() {
-        if (!supabase || !this.currentUser) return;
+        if (!supabase || !this.currentUser) {
+            console.log('⚠️ Cannot populate dropdown: supabase or currentUser not ready');
+            return;
+        }
         
         const { data: dates, error } = await SupabaseDB.getUserSessionDates(this.currentUser.id);
         
-        if (error || !dates || dates.length === 0) return;
+        if (error) {
+            console.error('Error loading session dates:', error);
+            return;
+        }
+        
+        if (!dates || dates.length === 0) {
+            console.log('📅 No past sessions found');
+            return;
+        }
         
         const select = document.getElementById('sessionDateSelect');
-        if (!select) return;
+        if (!select) {
+            console.log('⚠️ Session dropdown not found in DOM');
+            return;
+        }
+        
+        console.log(`📅 Populating dropdown with ${dates.length} dates. Current session: ${this.sessionDate}`);
         
         // Clear existing options except "Current Session"
         select.innerHTML = '<option value="current">Current Session</option>';
