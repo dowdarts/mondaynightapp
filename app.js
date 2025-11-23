@@ -378,11 +378,8 @@ class DartScoreTracker {
     handleKeyboard(e) {
         // Don't handle keyboard if a modal is open
         if (document.querySelector('.finish-modal')) {
-            console.log('Modal is open, ignoring key:', e.key);
             return;
         }
-        
-        console.log('Key pressed:', e.key, 'Current input:', this.currentInput);
         
         // Prevent default for keys we're handling
         if (['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key)) {
@@ -423,8 +420,6 @@ class DartScoreTracker {
         const score = parseInt(this.currentInput);
         if (isNaN(score)) return;
 
-        console.log(`Entering score ${score} at Game ${this.currentGame}, Dart Box ${this.currentDartBox}`);
-
         // Add score to current dart box
         const cell = document.querySelector(`.dart-cell[data-game="${this.currentGame}"][data-dart="${this.currentDartBox}"]`);
         if (cell) {
@@ -445,9 +440,6 @@ class DartScoreTracker {
 
             // Move to next dart box
             this.moveToNextDartBox();
-            console.log(`Moved to Dart Box ${this.currentDartBox}`);
-        } else {
-            console.error(`Cell not found for Game ${this.currentGame}, Dart Box ${this.currentDartBox}`);
         }
 
         this.currentInput = '';
@@ -498,11 +490,8 @@ class DartScoreTracker {
         let selectedResult = 'win';
         const buttons = modal.querySelectorAll('.finish-btn');
         
-        console.log('Buttons found:', buttons.length);
-        
         // Function to update selection
         const updateSelection = (result) => {
-            console.log('Update selection:', result);
             selectedResult = result;
             buttons.forEach(btn => {
                 if (btn.dataset.result === result) {
@@ -515,7 +504,6 @@ class DartScoreTracker {
 
         // Function to close modal and cleanup
         const closeModal = () => {
-            console.log('Closing modal');
             if (document.body.contains(modal)) {
                 document.body.removeChild(modal);
             }
@@ -524,8 +512,6 @@ class DartScoreTracker {
 
         // Keyboard handler
         const keyHandler = (e) => {
-            console.log('Key pressed in finish modal:', e.key);
-            
             if (e.key === '1') {
                 e.preventDefault();
                 e.stopPropagation();
@@ -543,7 +529,6 @@ class DartScoreTracker {
                 e.stopPropagation();
                 // Remove listener immediately to prevent duplicate calls
                 document.removeEventListener('keydown', keyHandler, true);
-                console.log('Enter pressed, selected:', selectedResult);
                 this.handleFinishResult(selectedResult);
                 closeModal();
             } else if (e.key === 'Escape') {
@@ -561,7 +546,6 @@ class DartScoreTracker {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const result = e.target.dataset.result || e.target.closest('.finish-btn').dataset.result;
-                console.log('Button clicked:', result);
                 this.handleFinishResult(result);
                 closeModal();
             });
@@ -571,14 +555,12 @@ class DartScoreTracker {
     handleFinishResult(result) {
         // Bounds check - prevent errors if already past game 3
         if (this.currentGame > 3) {
-            console.log('Error: handleFinishResult called when currentGame > 3');
             return;
         }
         
         const finishCell = document.querySelector(`.finish[data-game="${this.currentGame}"]`);
         
         if (!finishCell) {
-            console.log('Error: finishCell not found for game', this.currentGame);
             return;
         }
         
