@@ -504,26 +504,35 @@ class DartScoreTracker {
         const keyHandler = (e) => {
             if (e.key === '1') {
                 e.preventDefault();
+                e.stopPropagation();
                 updateSelection('win');
             } else if (e.key === '2') {
                 e.preventDefault();
+                e.stopPropagation();
                 updateSelection('partner');
             } else if (e.key === '3') {
                 e.preventDefault();
+                e.stopPropagation();
                 updateSelection('loss');
             } else if (e.key === 'Enter') {
                 e.preventDefault();
+                e.stopPropagation();
                 this.handleFinishResult(selectedResult);
-                document.body.removeChild(modal);
+                if (document.body.contains(modal)) {
+                    document.body.removeChild(modal);
+                }
                 document.removeEventListener('keydown', keyHandler);
             } else if (e.key === 'Escape') {
                 e.preventDefault();
-                document.body.removeChild(modal);
+                e.stopPropagation();
+                if (document.body.contains(modal)) {
+                    document.body.removeChild(modal);
+                }
                 document.removeEventListener('keydown', keyHandler);
             }
         };
 
-        document.addEventListener('keydown', keyHandler);
+        document.addEventListener('keydown', keyHandler, true);
         
         // Add click handlers
         buttons.forEach(btn => {
