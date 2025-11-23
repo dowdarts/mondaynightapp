@@ -538,16 +538,25 @@ td {
     border: 1px solid #e5e7eb;
     color: #1f2937;
     font-size: 14px;
-}
-
-.history-dart-cell.editable {
-    cursor: pointer;
     transition: all 0.2s;
 }
 
-.history-dart-cell.editable:hover {
+.scoring-table.locked .history-dart-cell {
+    cursor: default;
+    pointer-events: none;
+}
+
+.scoring-table.editing .history-dart-cell {
+    cursor: pointer;
+}
+
+.scoring-table.editing .history-dart-cell:hover:not(.end-marker) {
     background: #dbeafe;
     border-color: #3b82f6;
+}
+
+.history-dart-cell.editing-input {
+    padding: 0;
 }
 
 .history-dart-cell.filled {

@@ -692,11 +692,28 @@ class DartScoreTracker {
 
         historyContent.innerHTML = html;
         
-        // Add event listeners for edit buttons
-        document.querySelectorAll('.edit-match-btn').forEach(btn => {
+        // Add event listeners for toggle edit buttons
+        document.querySelectorAll('.toggle-edit-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const matchIndex = parseInt(e.target.dataset.matchIndex);
-                this.showEditMatchModal(matchIndex);
+                this.toggleEditMode(matchIndex, true);
+            });
+        });
+        
+        // Add event listeners for save buttons
+        document.querySelectorAll('.save-edit-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const matchIndex = parseInt(e.target.dataset.matchIndex);
+                this.saveHistoryEdits(matchIndex);
+            });
+        });
+        
+        // Add event listeners for cancel buttons
+        document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const matchIndex = parseInt(e.target.dataset.matchIndex);
+                this.toggleEditMode(matchIndex, false);
+                this.updateHistoryView(); // Refresh to discard changes
             });
         });
         
@@ -708,10 +725,13 @@ class DartScoreTracker {
             });
         });
         
-        // Add click handlers for editable cells
-        document.querySelectorAll('.history-dart-cell.editable').forEach(cell => {
+        // Add click handlers for cells in edit mode
+        document.querySelectorAll('.history-dart-cell').forEach(cell => {
             cell.addEventListener('click', (e) => {
-                this.editHistoryCell(e.target);
+                const container = e.target.closest('.history-match-container');
+                if (container && !container.querySelector('.scoring-table').classList.contains('locked')) {
+                    this.editHistoryCell(e.target);
+                }
             });
         });
     }
@@ -727,7 +747,7 @@ class DartScoreTracker {
             [3, 6, 9, 12, 15, 18, 21].forEach(dartBox => {
                 const scoreEntry = gameData.scores.find(s => s.dartBox === dartBox);
                 let cellContent = '';
-                let cellClass = 'history-dart-cell editable';
+                let cellClass = 'history-dart-cell';
                 
                 if (scoreEntry) {
                     cellContent = scoreEntry.score;
@@ -775,15 +795,17 @@ class DartScoreTracker {
         }
         
         return `
-            <div class="history-match-container">
+            <div class="history-match-container" data-match-index="${matchIndex}">
                 <div class="history-match-header">
                     <h3>Match ${match.match}</h3>
                     <div class="history-header-buttons">
-                        <button class="edit-match-btn" data-match-index="${matchIndex}">✏️ Edit</button>
+                        <button class="toggle-edit-btn" data-match-index="${matchIndex}">✏️ Edit</button>
+                        <button class="save-edit-btn" data-match-index="${matchIndex}" style="display: none; background: #16a34a;">✔️ Save</button>
+                        <button class="cancel-edit-btn" data-match-index="${matchIndex}" style="display: none; background: #64748b;">Cancel</button>
                         <button class="delete-match-btn" data-match-index="${matchIndex}">🗑️ Delete</button>
                     </div>
                 </div>
-                <div class="scoring-table">
+                <div class="scoring-table locked">
                     <table>
                         <thead>
                             <tr>
@@ -834,8 +856,82 @@ class DartScoreTracker {
         `;
     }
 
+    toggleEditMode(matchIndex, enable) {
+        const container = document.querySelector(`.history-match-container[data-match-index="${matchIndex}"]`);
+        if (!container) return;
+        
+        const table = container.querySelector('.scoring-table');
+        const editBtn = container.querySelector('.toggle-edit-btn');
+        const saveBtn = container.querySelector('.save-edit-btn');
+        const cancelBtn = container.querySelector('.cancel-edit-btn');
+        const deleteBtn = container.querySelector('.delete-match-btn');
+        
+        if (enable) {
+            table.classList.remove('locked');
+            table.classList.add('editing');
+            editBtn.style.display = 'none';
+            saveBtn.style.display = 'inline-block';
+            cancelBtn.style.display = 'inline-block';
+            deleteBtn.style.display = 'none';
+        } else {
+            table.classList.add('locked');
+            table.classList.remove('editing');
+            editBtn.style.display = 'inline-block';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+            deleteBtn.style.display = 'inline-block';
+        }
+    }
+
+    saveHistoryEdits(matchIndex) {
+        this.toggleEditMode(matchIndex, false);
+        
+        // Recalculate match totals from the edited data
+        const match = this.matchHistory[matchIndex];
+        if (!match) return;
+        
+        let totalScore = 0;
+        let totalDarts = 0;
+        let totalTons = 0;
+        let myFinishes = 0;
+        
+        for (let game = 1; game <= 3; game++) {
+            const gameData = match.gameData[game];
+            let gameScore = 0;
+            let lastDartBox = 0;
+            
+            gameData.scores.forEach(entry => {
+                gameScore += entry.score;
+                lastDartBox = entry.dartBox;
+            });
+            
+            gameData.totalScore = gameScore;
+            gameData.totalDarts = lastDartBox;
+            gameData.avg = lastDartBox > 0 ? (gameScore / lastDartBox).toFixed(2) : 0;
+            gameData.tons = Math.floor(gameScore / 100);
+            
+            totalScore += gameScore;
+            totalDarts += lastDartBox;
+            totalTons += gameData.tons;
+            
+            if (gameData.finishType === 'win') myFinishes++;
+        }
+        
+        match.totals = {
+            score: totalScore,
+            darts: totalDarts,
+            avg: totalDarts > 0 ? (totalScore / totalDarts).toFixed(2) : '0.00'
+        };
+        match.myFinishes = myFinishes;
+        
+        // Save to database and update views
+        this.saveToDatabase();
+        this.updateHistoryView();
+        this.updateOverallStats();
+    }
+
     editHistoryCell(cell) {
-        if (cell.classList.contains('end-marker')) return;
+        if (cell.classList.contains('end-marker') || cell.classList.contains('editing-input')) return;
         
         const matchIndex = parseInt(cell.dataset.matchIndex);
         const game = parseInt(cell.dataset.game);
