@@ -850,9 +850,9 @@ class DartScoreTracker {
         const modal = document.createElement('div');
         modal.className = 'finish-modal';
         
-        const title = isLastMatch ? 'Collect & Save Totals?' : 'Move to Next Match?';
+        const title = isLastMatch ? 'Complete Session?' : 'Move to Next Match?';
         const message = isLastMatch 
-            ? 'This will save Match 5, then save all 5 matches as a group to your Year to Date stats and start a fresh night from Match 1.'
+            ? 'This will save Match 5 and complete your session (5 matches saved as a group). You can then create a new session.'
             : `This will save Match ${this.currentMatch} and start Match ${this.currentMatch + 1}.`;
         
         modal.innerHTML = `
@@ -1933,14 +1933,14 @@ class DartScoreTracker {
         modal.className = 'finish-modal';
         modal.innerHTML = `
             <div class="finish-modal-content">
-                <h2>✅ Night Stats Saved!</h2>
+                <h2>✅ Session Saved!</h2>
                 <div style="background: #1e293b; border-radius: 12px; padding: 20px; margin: 20px 0;">
                     <div style="color: #9ca3af; margin-bottom: 10px;">Matches: ${matches} | Score: ${score} | Darts: ${darts}</div>
                     <div style="color: #10b981; font-size: 24px; font-weight: bold;">Average: ${avg}</div>
                     <div style="color: #f97316; margin-top: 10px;">Games Finished: ${finishes}</div>
                 </div>
-                <p style="color: #9ca3af; margin-bottom: 20px;">Your stats have been saved to the Year to Date leaderboard!</p>
-                <button class="finish-btn win" id="startFreshBtn">🌙 Start New Night</button>
+                <p style="color: #9ca3af; margin-bottom: 20px;">Your 5-match session has been saved to the Year to Date leaderboard!</p>
+                <button class="finish-btn win" id="startFreshBtn">🆕 CREATE NEW SESSION</button>
             </div>
         `;
         document.body.appendChild(modal);
@@ -1952,7 +1952,8 @@ class DartScoreTracker {
     }
 
     async startNewNight() {
-        // Only clear current session state from database, keep all match_history for YTD
+        // Clear current session state from database, keep all match_history and nightly_stats
+        // This creates a new session for another 5 matches
         if (supabase) {
             await SupabaseDB.clearSession(this.sessionId);
         }
@@ -1960,7 +1961,7 @@ class DartScoreTracker {
         // Clear local storage to force new session ID on reload
         localStorage.removeItem('dart_session_id');
         
-        // Reload the page to start fresh with new date/session
+        // Reload the page to create a fresh session (5 new matches)
         window.location.reload();
     }
 
