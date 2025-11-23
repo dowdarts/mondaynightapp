@@ -931,6 +931,7 @@ class DartScoreTracker {
     }
 
     editHistoryCell(cell) {
+        // Don't edit if it's the end marker or already being edited
         if (cell.classList.contains('end-marker') || cell.classList.contains('editing-input')) return;
         
         const matchIndex = parseInt(cell.dataset.matchIndex);
@@ -938,6 +939,8 @@ class DartScoreTracker {
         const dartBox = parseInt(cell.dataset.dart);
         
         const currentValue = cell.textContent.trim();
+        
+        // Create a simple text input
         const input = document.createElement('input');
         input.type = 'text';
         input.className = 'cell-edit-input';
@@ -945,55 +948,48 @@ class DartScoreTracker {
         input.placeholder = currentValue || '0';
         input.setAttribute('inputmode', 'numeric');
         
+        // Replace cell content with input
         cell.classList.add('editing-input');
         cell.textContent = '';
         cell.appendChild(input);
         input.focus();
         
-        const saveEdit = () => {
-            const newValue = input.value.trim();
-            cell.classList.remove('editing-input');
-            
-            if (cell.contains(input)) {
-                cell.removeChild(input);
-            }
-            
-            if (newValue === '') {
-                // Keep original value if nothing entered
-                cell.textContent = currentValue;
-                return;
-            }
-            
-            const numValue = parseInt(newValue);
-            if (isNaN(numValue) || numValue < 0 || numValue > 180) {
-                // Invalid value, revert
-                cell.textContent = currentValue;
-                return;
-            }
-            
-            // Update score in memory only - don't save to database yet
-            this.updateHistoryScore(matchIndex, game, dartBox, numValue);
-            
-            // Update just this cell display
-            cell.textContent = numValue;
-        };
-        
-        const cancelEdit = () => {
-            cell.classList.remove('editing-input');
-            if (cell.contains(input)) {
-                cell.removeChild(input);
-            }
-            cell.textContent = currentValue;
-        };
-        
+        // Handle keyboard input
         input.addEventListener('keydown', (e) => {
-            // Only allow numbers, backspace, delete, enter, escape
             if (e.key === 'Enter') {
                 e.preventDefault();
-                saveEdit();
+                const newValue = input.value.trim();
+                
+                // Remove input
+                cell.classList.remove('editing-input');
+                if (cell.contains(input)) {
+                    cell.removeChild(input);
+                }
+                
+                // Validate and save
+                if (newValue === '') {
+                    cell.textContent = currentValue;
+                    return;
+                }
+                
+                const numValue = parseInt(newValue);
+                if (isNaN(numValue) || numValue < 0 || numValue > 180) {
+                    cell.textContent = currentValue;
+                    return;
+                }
+                
+                // Update the score in memory
+                this.updateHistoryScore(matchIndex, game, dartBox, numValue);
+                cell.textContent = numValue;
+                
             } else if (e.key === 'Escape') {
                 e.preventDefault();
-                cancelEdit();
+                cell.classList.remove('editing-input');
+                if (cell.contains(input)) {
+                    cell.removeChild(input);
+                }
+                cell.textContent = currentValue;
+                
             } else if (!/^[0-9]$/.test(e.key) && 
                        e.key !== 'Backspace' && 
                        e.key !== 'Delete' && 
@@ -1004,7 +1000,14 @@ class DartScoreTracker {
             }
         });
         
-        input.addEventListener('blur', cancelEdit);
+        // Cancel on blur
+        input.addEventListener('blur', () => {
+            cell.classList.remove('editing-input');
+            if (cell.contains(input)) {
+                cell.removeChild(input);
+            }
+            cell.textContent = currentValue;
+        });
     }
 
     updateHistoryScore(matchIndex, game, dartBox, newScore) {
