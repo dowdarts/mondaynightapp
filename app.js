@@ -845,9 +845,10 @@ class DartScoreTracker {
             status: 'completed',
             gameData: JSON.parse(JSON.stringify(this.gameData)),
             totals: {
-                score: document.getElementById('totalScore').textContent,
-                darts: document.getElementById('totalDarts').textContent,
-                avg: document.getElementById('dartAvg').textContent
+                score: parseInt(document.getElementById('totalScore').textContent) || 0,
+                darts: parseInt(document.getElementById('totalDarts').textContent) || 0,
+                tons: parseInt(document.getElementById('totalTons').textContent) || 0,
+                avg: parseFloat(document.getElementById('dartAvg').textContent) || 0
             },
             myFinishes: myFinishes,
             partnerFinishes: partnerFinishes
