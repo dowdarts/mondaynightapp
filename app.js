@@ -955,6 +955,11 @@ class DartScoreTracker {
         cell.appendChild(input);
         input.focus();
         
+        // Filter input to numbers only
+        input.addEventListener('input', (e) => {
+            input.value = input.value.replace(/[^0-9]/g, '');
+        });
+        
         // Handle keyboard input
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
@@ -990,14 +995,6 @@ class DartScoreTracker {
                     cell.removeChild(input);
                 }
                 cell.textContent = currentValue;
-                
-            } else if (!/^[0-9]$/.test(e.key) && 
-                       e.key !== 'Backspace' && 
-                       e.key !== 'Delete' && 
-                       e.key !== 'ArrowLeft' && 
-                       e.key !== 'ArrowRight' &&
-                       e.key !== 'Tab') {
-                e.preventDefault();
             }
         });
         
