@@ -692,28 +692,11 @@ class DartScoreTracker {
 
         historyContent.innerHTML = html;
         
-        // Add event listeners for toggle edit buttons
-        document.querySelectorAll('.toggle-edit-btn').forEach(btn => {
+        // Add event listeners for edit buttons
+        document.querySelectorAll('.edit-match-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const matchIndex = parseInt(e.target.dataset.matchIndex);
-                this.toggleEditMode(matchIndex, true);
-            });
-        });
-        
-        // Add event listeners for save buttons
-        document.querySelectorAll('.save-edit-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const matchIndex = parseInt(e.target.dataset.matchIndex);
-                this.saveHistoryEdits(matchIndex);
-            });
-        });
-        
-        // Add event listeners for cancel buttons
-        document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const matchIndex = parseInt(e.target.dataset.matchIndex);
-                this.toggleEditMode(matchIndex, false);
-                this.updateHistoryView(); // Refresh to discard changes
+                this.showEditMatchModal(matchIndex);
             });
         });
         
@@ -722,16 +705,6 @@ class DartScoreTracker {
             btn.addEventListener('click', (e) => {
                 const matchIndex = parseInt(e.target.dataset.matchIndex);
                 this.deleteMatch(matchIndex);
-            });
-        });
-        
-        // Add click handlers for cells only in edit mode
-        document.querySelectorAll('.history-dart-cell').forEach(cell => {
-            cell.addEventListener('click', (e) => {
-                const container = e.target.closest('.history-match-container');
-                if (container && !container.querySelector('.scoring-table').classList.contains('locked')) {
-                    this.editHistoryCell(e.target);
-                }
             });
         });
     }
@@ -799,13 +772,11 @@ class DartScoreTracker {
                 <div class="history-match-header">
                     <h3>Match ${match.match}</h3>
                     <div class="history-header-buttons">
-                        <button class="toggle-edit-btn" data-match-index="${matchIndex}">✏️ Edit</button>
-                        <button class="save-edit-btn" data-match-index="${matchIndex}" style="display: none; background: #16a34a;">✔️ Save</button>
-                        <button class="cancel-edit-btn" data-match-index="${matchIndex}" style="display: none; background: #64748b;">Cancel</button>
+                        <button class="edit-match-btn" data-match-index="${matchIndex}">✏️ Edit</button>
                         <button class="delete-match-btn" data-match-index="${matchIndex}">🗑️ Delete</button>
                     </div>
                 </div>
-                <div class="scoring-table locked">
+                <div class="scoring-table">
                     <table>
                         <thead>
                             <tr>
@@ -854,231 +825,6 @@ class DartScoreTracker {
                 </div>
             </div>
         `;
-    }
-
-    toggleEditMode(matchIndex, enable) {
-        const container = document.querySelector(`.history-match-container[data-match-index="${matchIndex}"]`);
-        if (!container) return;
-        
-        const table = container.querySelector('.scoring-table');
-        const editBtn = container.querySelector('.toggle-edit-btn');
-        const saveBtn = container.querySelector('.save-edit-btn');
-        const cancelBtn = container.querySelector('.cancel-edit-btn');
-        const deleteBtn = container.querySelector('.delete-match-btn');
-        
-        if (enable) {
-            table.classList.remove('locked');
-            table.classList.add('editing');
-            editBtn.style.display = 'none';
-            saveBtn.style.display = 'inline-block';
-            cancelBtn.style.display = 'inline-block';
-            deleteBtn.style.display = 'none';
-        } else {
-            table.classList.add('locked');
-            table.classList.remove('editing');
-            editBtn.style.display = 'inline-block';
-            saveBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
-            deleteBtn.style.display = 'inline-block';
-        }
-    }
-
-    saveHistoryEdits(matchIndex) {
-        this.toggleEditMode(matchIndex, false);
-        
-        // Recalculate match totals from the edited data
-        const match = this.matchHistory[matchIndex];
-        if (!match) return;
-        
-        let totalScore = 0;
-        let totalDarts = 0;
-        let totalTons = 0;
-        let myFinishes = 0;
-        
-        for (let game = 1; game <= 3; game++) {
-            const gameData = match.gameData[game];
-            let gameScore = 0;
-            let lastDartBox = 0;
-            
-            gameData.scores.forEach(entry => {
-                gameScore += entry.score;
-                lastDartBox = entry.dartBox;
-            });
-            
-            gameData.totalScore = gameScore;
-            gameData.totalDarts = lastDartBox;
-            gameData.avg = lastDartBox > 0 ? (gameScore / lastDartBox).toFixed(2) : 0;
-            gameData.tons = Math.floor(gameScore / 100);
-            
-            totalScore += gameScore;
-            totalDarts += lastDartBox;
-            totalTons += gameData.tons;
-            
-            if (gameData.finishType === 'win') myFinishes++;
-        }
-        
-        match.totals = {
-            score: totalScore,
-            darts: totalDarts,
-            avg: totalDarts > 0 ? (totalScore / totalDarts).toFixed(2) : '0.00'
-        };
-        match.myFinishes = myFinishes;
-        
-        // Save to database and update views
-        this.saveToDatabase();
-        this.updateHistoryView();
-        this.updateStatsView();
-    }
-
-    editHistoryCell(cell) {
-        // Don't edit if it's the end marker or already being edited
-        if (cell.classList.contains('end-marker') || cell.classList.contains('editing-input')) return;
-        
-        const matchIndex = parseInt(cell.dataset.matchIndex);
-        const game = parseInt(cell.dataset.game);
-        const dartBox = parseInt(cell.dataset.dart);
-        
-        const currentValue = cell.textContent.trim();
-        
-        // Create a simple text input - NO SPINNERS
-        const input = document.createElement('input');
-        input.setAttribute('type', 'text');
-        input.className = 'cell-edit-input';
-        input.value = '';
-        input.placeholder = '';
-        input.setAttribute('inputmode', 'numeric');
-        input.setAttribute('pattern', '[0-9]*');
-        input.setAttribute('autocomplete', 'off');
-        
-        // Replace cell content with input
-        cell.classList.add('editing-input');
-        cell.innerHTML = '';
-        cell.appendChild(input);
-        
-        // Small delay to ensure input is in DOM
-        setTimeout(() => {
-            input.focus();
-            input.select();
-        }, 10);
-        
-        // Handle keyboard input
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const newValue = input.value.trim();
-                
-                // Remove input
-                cell.classList.remove('editing-input');
-                if (cell.contains(input)) {
-                    cell.removeChild(input);
-                }
-                
-                // Validate and save
-                if (newValue === '') {
-                    cell.textContent = currentValue;
-                    return;
-                }
-                
-                const numValue = parseInt(newValue);
-                if (isNaN(numValue) || numValue < 0 || numValue > 180) {
-                    cell.textContent = currentValue;
-                    return;
-                }
-                
-                // Update the score in memory
-                this.updateHistoryScore(matchIndex, game, dartBox, numValue);
-                
-                // Update cell display with proper ton highlighting
-                cell.textContent = numValue;
-                if (numValue >= 95) {
-                    cell.classList.add('ton-score');
-                } else {
-                    cell.classList.remove('ton-score');
-                }
-                
-            } else if (e.key === 'Escape') {
-                e.preventDefault();
-                cell.classList.remove('editing-input');
-                if (cell.contains(input)) {
-                    cell.removeChild(input);
-                }
-                cell.textContent = currentValue;
-            }
-        });
-    }
-
-    updateHistoryScore(matchIndex, game, dartBox, newScore) {
-        const match = this.matchHistory[matchIndex];
-        if (!match || match.status === 'sit-out') return;
-        
-        const gameData = match.gameData[game];
-        const existingIndex = gameData.scores.findIndex(s => s.dartBox === dartBox);
-        
-        if (existingIndex >= 0) {
-            gameData.scores[existingIndex].score = newScore;
-        } else {
-            gameData.scores.push({
-                dartBox: dartBox,
-                score: newScore,
-                darts: dartBox
-            });
-            gameData.scores.sort((a, b) => a.dartBox - b.dartBox);
-        }
-        
-        this.recalculateMatchData(matchIndex);
-    }
-
-    removeHistoryScore(matchIndex, game, dartBox) {
-        const match = this.matchHistory[matchIndex];
-        if (!match || match.status === 'sit-out') return;
-        
-        const gameData = match.gameData[game];
-        gameData.scores = gameData.scores.filter(s => s.dartBox !== dartBox);
-        
-        this.recalculateMatchData(matchIndex);
-    }
-
-    recalculateMatchData(matchIndex) {
-        const match = this.matchHistory[matchIndex];
-        
-        // Recalculate each game
-        for (let game = 1; game <= 3; game++) {
-            const gameData = match.gameData[game];
-            const totalScore = gameData.scores.reduce((sum, entry) => sum + entry.score, 0);
-            const lastDartBox = gameData.scores.length > 0 
-                ? Math.max(...gameData.scores.map(s => s.dartBox))
-                : 0;
-            
-            gameData.totalScore = totalScore;
-            gameData.totalDarts = lastDartBox;
-            gameData.avg = lastDartBox > 0 ? (totalScore / lastDartBox).toFixed(2) : 0;
-            gameData.tons = Math.floor(totalScore / 100);
-        }
-        
-        // Recalculate match totals
-        let matchScore = 0;
-        let matchDarts = 0;
-        let myFinishes = 0;
-        
-        for (let game = 1; game <= 3; game++) {
-            matchScore += match.gameData[game].totalScore;
-            matchDarts += match.gameData[game].totalDarts;
-            if (match.gameData[game].finishType === 'win') myFinishes++;
-        }
-        
-        const matchAvg = matchDarts > 0 ? (matchScore / matchDarts).toFixed(2) : '0.00';
-        
-        match.totals = {
-            score: matchScore.toString(),
-            darts: matchDarts.toString(),
-            avg: matchAvg
-        };
-        match.myFinishes = myFinishes;
-        
-        // Update stats if visible
-        if (document.getElementById('statsTab').classList.contains('active')) {
-            this.updateStatsView();
-        }
     }
 
     showEditMatchModal(matchIndex) {
