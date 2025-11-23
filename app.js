@@ -665,7 +665,7 @@ class DartScoreTracker {
                     
                     // Clear the cell
                     cells[i].textContent = '';
-                    cells[i].classList.remove('filled', 'end-marker');
+                    cells[i].classList.remove('filled', 'end-marker', 'high-score');
 
                     if (isEndMarker) {
                         // If we're undoing an end score, go back to previous game
