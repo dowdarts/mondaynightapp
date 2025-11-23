@@ -592,6 +592,18 @@ td {
     box-sizing: border-box;
 }
 
+/* Force remove any spinner arrows */
+.cell-edit-input::-webkit-outer-spin-button,
+.cell-edit-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.cell-edit-input {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
 .cell-edit-input:focus {
     outline: none;
     border-color: #2563eb;

@@ -940,13 +940,14 @@ class DartScoreTracker {
         
         const currentValue = cell.textContent.trim();
         
-        // Create a simple text input
+        // Create a simple text input - NO SPINNERS
         const input = document.createElement('input');
-        input.type = 'text';
+        input.setAttribute('type', 'text');
         input.className = 'cell-edit-input';
         input.value = '';
         input.placeholder = currentValue || '0';
         input.setAttribute('inputmode', 'numeric');
+        input.setAttribute('pattern', '[0-9]*');
         
         // Replace cell content with input
         cell.classList.add('editing-input');
