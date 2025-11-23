@@ -1896,7 +1896,9 @@ class DartScoreTracker {
                     avg_score: parseFloat(overallAvg)
                 };
 
+                console.log('Saving nightly stats with session_date:', this.sessionDate, 'session_id:', this.sessionId);
                 await SupabaseDB.saveNightlyStats(nightlyData);
+                console.log('✅ Session saved to nightly_stats table');
                 
                 // Show success and reset
                 this.showSuccessAndReset(totalCompleted, cumulativeScore, cumulativeDarts, overallAvg, totalMyFinishes);

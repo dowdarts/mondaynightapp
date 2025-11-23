@@ -203,6 +203,8 @@ const SupabaseDB = {
             
             if (error) return { data: null, error };
             
+            console.log(`📊 YTD Leaderboard: Found ${nightlyStats?.length || 0} saved sessions from ${currentYear}`);
+            
             // Group by user
             const userStats = {};
             
@@ -247,6 +249,10 @@ const SupabaseDB = {
             
             // Sort by average (descending)
             leaderboard.sort((a, b) => b.average - a.average);
+            
+            console.log('📊 YTD Leaderboard built:', leaderboard.map(u => 
+                `${u.userName}: ${u.nightsPlayed} nights, ${u.average} avg`
+            ));
             
             return { data: leaderboard, error: null };
         } catch (error) {
