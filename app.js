@@ -838,13 +838,33 @@ class DartScoreTracker {
         
         document.body.appendChild(modal);
         
+        // Keyboard handler for Enter key
+        const keyHandler = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                document.removeEventListener('keydown', keyHandler, true);
+                document.body.removeChild(modal);
+                this.proceedToNextMatch(isLastMatch);
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                document.removeEventListener('keydown', keyHandler, true);
+                document.body.removeChild(modal);
+            }
+        };
+        
+        document.addEventListener('keydown', keyHandler, true);
+        
         // Cancel button
         document.getElementById('cancelNextMatchBtn').addEventListener('click', () => {
+            document.removeEventListener('keydown', keyHandler, true);
             document.body.removeChild(modal);
         });
         
         // Confirm button
         document.getElementById('confirmNextMatchBtn').addEventListener('click', () => {
+            document.removeEventListener('keydown', keyHandler, true);
             document.body.removeChild(modal);
             this.proceedToNextMatch(isLastMatch);
         });
