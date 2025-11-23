@@ -584,7 +584,9 @@ class DartScoreTracker {
         gameData.totalScore = totalScore;
         gameData.totalDarts = lastDartBox;
         gameData.avg = lastDartBox > 0 ? (totalScore / lastDartBox).toFixed(2) : 0;
-        gameData.tons = Math.floor(totalScore / 100);
+        
+        // Count tons (scores of 95+)
+        gameData.tons = gameData.scores.filter(entry => entry.score >= 95).length;
 
         // Update UI
         document.querySelector(`.score[data-game="${this.currentGame}"]`).textContent = totalScore;
@@ -596,16 +598,19 @@ class DartScoreTracker {
     calculateMatchTotals() {
         let totalScore = 0;
         let totalDarts = 0;
+        let totalTons = 0;
 
         for (let game = 1; game <= 3; game++) {
             totalScore += this.gameData[game].totalScore;
             totalDarts += this.gameData[game].totalDarts;
+            totalTons += this.gameData[game].tons;
         }
 
         const dartAvg = totalDarts > 0 ? (totalScore / totalDarts).toFixed(2) : 0.00;
 
         document.getElementById('totalScore').textContent = totalScore;
         document.getElementById('totalDarts').textContent = totalDarts;
+        document.getElementById('totalTons').textContent = totalTons;
         document.getElementById('dartAvg').textContent = dartAvg;
     }
 
