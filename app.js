@@ -813,6 +813,17 @@ class DartScoreTracker {
 
     nightDone() {
         const isLastMatch = this.currentMatch === 5;
+        
+        // Check if current match has at least one game completed
+        const hasAnyGameData = Object.values(this.gameData).some(game => 
+            game.scores && game.scores.length > 0
+        );
+        
+        if (!hasAnyGameData) {
+            alert('Please complete at least one game before proceeding.');
+            return;
+        }
+        
         // Show custom confirmation modal
         this.showNextMatchConfirmation(isLastMatch);
     }
@@ -823,7 +834,7 @@ class DartScoreTracker {
         
         const title = isLastMatch ? 'Collect & Save Totals?' : 'Move to Next Match?';
         const message = isLastMatch 
-            ? 'This will save all completed matches to your stats and start a fresh night from Match 1.'
+            ? 'This will save Match 5, then save all 5 matches as a group to your Year to Date stats and start a fresh night from Match 1.'
             : `This will save Match ${this.currentMatch} and start Match ${this.currentMatch + 1}.`;
         
         modal.innerHTML = `
@@ -906,6 +917,8 @@ class DartScoreTracker {
         this.saveToDatabase();
         
         if (isLastMatch) {
+            console.log('Match 5 saved to history. Total matches:', this.matchHistory.length);
+            console.log('Match history:', this.matchHistory.map(m => `Match ${m.match}: ${m.totals.score} pts`));
             // Save all completed matches as nightly stats and reset
             this.collectAndSaveNightStats();
         } else {
@@ -1838,7 +1851,9 @@ class DartScoreTracker {
         let totalTons = 0;
         let totalMyFinishes = 0;
 
+        console.log('Collecting stats from matches:', this.matchHistory.length);
         this.matchHistory.forEach(match => {
+            console.log(`Match ${match.match}: ${match.status}, Score: ${match.totals.score}, Darts: ${match.totals.darts}`);
             if (match.status !== 'sit-out') {
                 totalCompleted++;
                 cumulativeScore += parseInt(match.totals.score) || 0;
@@ -1848,6 +1863,7 @@ class DartScoreTracker {
             }
         });
 
+        console.log(`Totals: ${totalCompleted} matches, ${cumulativeScore} score, ${cumulativeDarts} darts`);
         const overallAvg = cumulativeDarts > 0 ? (cumulativeScore / cumulativeDarts).toFixed(2) : '0.00';
 
         // Save to nightly_stats table
