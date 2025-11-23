@@ -1198,11 +1198,73 @@ class DartScoreTracker {
         }
     }
 
-    displayHistoricalMatches(matches, sessionDate) {
+    async displaySessionSummary(sessionDate, historyContent) {
+        // Fetch aggregated stats from nightly_stats
+        const { data, error } = await supabase
+            .from('nightly_stats')
+            .select('*')
+            .eq('user_id', this.currentUser.id)
+            .eq('session_date', sessionDate)
+            .single();
+        
+        if (error || !data) {
+            historyContent.innerHTML = '<p class="empty-message">No data found for this session.</p>';
+            return;
+        }
+        
+        const dateObj = new Date(sessionDate);
+        const formattedDate = dateObj.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            month: 'long', 
+            day: 'numeric', 
+            year: 'numeric' 
+        });
+        
+        historyContent.innerHTML = `
+            <div style="background: #1e293b; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; color: #9ca3af;">
+                <strong>📅 Session Summary:</strong> ${formattedDate}
+            </div>
+            <div style="background: #2d3548; padding: 30px; border-radius: 12px; border: 2px solid #3d4558;">
+                <h3 style="color: #fff; margin-bottom: 20px; text-align: center;">📊 Session Totals</h3>
+                <div style="display: grid; gap: 15px;">
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: #1e293b; border-radius: 8px;">
+                        <span style="color: #9ca3af;">Total Matches:</span>
+                        <span style="color: #fff; font-weight: bold;">${data.total_matches}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: #1e293b; border-radius: 8px;">
+                        <span style="color: #9ca3af;">Total Score:</span>
+                        <span style="color: #fff; font-weight: bold;">${data.total_score}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: #1e293b; border-radius: 8px;">
+                        <span style="color: #9ca3af;">Total Darts:</span>
+                        <span style="color: #fff; font-weight: bold;">${data.total_darts}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: #1e293b; border-radius: 8px;">
+                        <span style="color: #9ca3af;">Total Tons (95+):</span>
+                        <span style="color: #f97316; font-weight: bold;">${data.total_tons}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: #1e293b; border-radius: 8px;">
+                        <span style="color: #9ca3af;">Games Finished:</span>
+                        <span style="color: #10b981; font-weight: bold;">${data.total_finishes}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 15px; background: #16a34a; border-radius: 8px; margin-top: 10px;">
+                        <span style="color: #fff; font-size: 18px; font-weight: bold;">Session Average:</span>
+                        <span style="color: #fff; font-size: 24px; font-weight: bold;">${data.avg_score}</span>
+                    </div>
+                </div>
+                <p style="color: #9ca3af; text-align: center; margin-top: 20px; font-size: 14px;">
+                    ℹ️ Individual match details not available for this session
+                </p>
+            </div>
+        `;
+    }
+
+    async displayHistoricalMatches(matches, sessionDate) {
         const historyContent = document.getElementById('historyContent');
         
         if (matches.length === 0) {
-            historyContent.innerHTML = '<p class="empty-message">No matches found for this session.</p>';
+            // No individual matches found - show aggregated stats from nightly_stats instead
+            await this.displaySessionSummary(sessionDate, historyContent);
             return;
         }
 
