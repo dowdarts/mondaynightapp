@@ -368,12 +368,6 @@ class DartScoreTracker {
             });
         });
 
-        // Clear All Stats button
-        const clearAllBtn = document.getElementById('clearAllStatsBtn');
-        if (clearAllBtn) {
-            clearAllBtn.addEventListener('click', () => this.clearAllStats());
-        }
-
         // Session date selector
         const sessionDateSelect = document.getElementById('sessionDateSelect');
         if (sessionDateSelect) {
@@ -2195,38 +2189,6 @@ class DartScoreTracker {
         });
     }
 
-    clearAllStats() {
-        // Show custom clear all confirmation modal
-        const modal = document.createElement('div');
-        modal.className = 'finish-modal';
-        
-        modal.innerHTML = `
-            <div class="finish-modal-content">
-                <h2>⚠️ Clear All Stats?</h2>
-                <p style="color: #ef4444; margin-bottom: 20px; font-size: 16px; font-weight: 600;">WARNING: This will delete ALL matches, statistics, and history data!</p>
-                <p style="color: #9ca3af; margin-bottom: 30px; font-size: 14px;">This action cannot be undone. All your scoring data will be permanently deleted.</p>
-                <div class="finish-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <button class="finish-btn" id="cancelClearBtn" style="background: #64748b;">
-                        Cancel
-                    </button>
-                    <button class="finish-btn loss" id="confirmClearBtn">
-                        Delete Everything
-                    </button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        document.getElementById('cancelClearBtn').addEventListener('click', () => {
-            document.body.removeChild(modal);
-        });
-        
-        document.getElementById('confirmClearBtn').addEventListener('click', async () => {
-            document.body.removeChild(modal);
-            await this.resetForNewNight();
-        });
-    }
 }
 
 // Initialize app when DOM is loaded
