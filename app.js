@@ -808,6 +808,12 @@ class DartScoreTracker {
     nightDone() {
         const isLastMatch = this.currentMatch === 5;
         
+        // If match 5 is saved, save night stats
+        if (isLastMatch && this.match5Saved) {
+            this.saveNightStats();
+            return;
+        }
+        
         // Show custom confirmation modal
         this.showNextMatchConfirmation(isLastMatch);
     }
@@ -816,9 +822,9 @@ class DartScoreTracker {
         const modal = document.createElement('div');
         modal.className = 'finish-modal';
         
-        const title = isLastMatch ? 'End the Night?' : 'Move to Next Match?';
+        const title = isLastMatch ? 'Save Final Match?' : 'Move to Next Match?';
         const message = isLastMatch 
-            ? 'This will save Match 5 and show your nightly totals.'
+            ? 'This will save Match 5. You can then review all your stats before saving your night stats.'
             : `This will save Match ${this.currentMatch} and start Match ${this.currentMatch + 1}.`;
         
         modal.innerHTML = `
@@ -901,8 +907,11 @@ class DartScoreTracker {
         this.saveToDatabase();
         
         if (isLastMatch) {
-            // Show nightly totals
-            this.showNightlyTotals();
+            // Mark match 5 as saved
+            this.match5Saved = true;
+            // Update button to show "Save Night Stats"
+            this.updateMatchDisplay();
+            // User can now review all tabs before saving night stats
         } else {
             // Move to next match
             this.startNextMatch();
@@ -989,8 +998,11 @@ class DartScoreTracker {
         
         // Update button text based on current match
         const nextMatchBtn = document.getElementById('nextMatchBtn');
-        if (this.currentMatch === 5) {
-            nextMatchBtn.innerHTML = '📊 COLLECT TOTALS';
+        if (this.currentMatch === 5 && this.match5Saved) {
+            nextMatchBtn.innerHTML = '📊 SAVE NIGHT STATS';
+            nextMatchBtn.style.background = '#16a34a';
+        } else if (this.currentMatch === 5) {
+            nextMatchBtn.innerHTML = '💾 SAVE FINAL MATCH';
             nextMatchBtn.style.background = '#9333ea';
         } else {
             nextMatchBtn.innerHTML = '▶ NEXT MATCH';
@@ -1729,6 +1741,11 @@ class DartScoreTracker {
         this.calculateMatchTotals();
     }
 
+    saveNightStats() {
+        // Show the nightly totals modal with save option
+        this.showNightlyTotals();
+    }
+
     async startNewNight() {
         // Clear session from database (match history and current session)
         if (supabase) {
@@ -1759,6 +1776,7 @@ class DartScoreTracker {
         this.currentDartBox = 3;
         this.currentInput = '';
         this.matchComplete = false;
+        this.match5Saved = false;
         this.matchHistory = [];
         
         this.gameData = {
