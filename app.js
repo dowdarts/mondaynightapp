@@ -538,6 +538,8 @@ class DartScoreTracker {
             } else if (e.key === 'Enter') {
                 e.preventDefault();
                 e.stopPropagation();
+                // Remove listener immediately to prevent duplicate calls
+                document.removeEventListener('keydown', keyHandler, true);
                 console.log('Enter pressed, selected:', selectedResult);
                 this.handleFinishResult(selectedResult);
                 closeModal();
