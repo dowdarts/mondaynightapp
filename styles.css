@@ -178,15 +178,25 @@ td {
 
 .main-content {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr auto;
     gap: 15px;
     margin-bottom: 15px;
+    align-items: start;
+}
+
+.controls-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
 .match-totals {
     background: #2d3548;
     padding: 20px;
     border-radius: 12px;
+    min-width: 200px;
+    position: sticky;
+    top: 10px;
 }
 
 .match-totals h3 {
@@ -220,12 +230,6 @@ td {
 .total-row.average .total-value {
     color: #4ade80;
     font-size: 32px;
-}
-
-.controls {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
 }
 
 .action-buttons {
@@ -926,11 +930,14 @@ td {
     }
 
     .main-content {
+        grid-template-columns: 1fr;
         gap: 10px;
     }
 
     .match-totals {
         padding: 15px;
+        position: static;
+        min-width: auto;
     }
 
     .match-totals h3 {
