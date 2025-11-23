@@ -878,6 +878,17 @@ class DartScoreTracker {
             if (this.gameData[game].finishType === 'partner') partnerFinishes++;
         }
 
+        // Calculate totals from gameData instead of DOM
+        let totalScore = 0;
+        let totalDarts = 0;
+        let totalTons = 0;
+        for (let game = 1; game <= 3; game++) {
+            totalScore += this.gameData[game].totalScore;
+            totalDarts += this.gameData[game].totalDarts;
+            totalTons += this.gameData[game].tons;
+        }
+        const dartAvg = totalDarts > 0 ? parseFloat((totalScore / totalDarts).toFixed(2)) : 0.00;
+
         // Remove existing match with same number if it exists (prevent duplicates)
         const existingIndex = this.matchHistory.findIndex(m => m.match === this.currentMatch);
         if (existingIndex !== -1) {
@@ -890,10 +901,10 @@ class DartScoreTracker {
             status: 'completed',
             gameData: JSON.parse(JSON.stringify(this.gameData)),
             totals: {
-                score: parseInt(document.getElementById('totalScore').textContent) || 0,
-                darts: parseInt(document.getElementById('totalDarts').textContent) || 0,
-                tons: parseInt(document.getElementById('totalTons').textContent) || 0,
-                avg: parseFloat(document.getElementById('dartAvg').textContent) || 0
+                score: totalScore,
+                darts: totalDarts,
+                tons: totalTons,
+                avg: dartAvg
             },
             myFinishes: myFinishes,
             partnerFinishes: partnerFinishes
