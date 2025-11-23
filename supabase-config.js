@@ -59,7 +59,7 @@ const SupabaseDB = {
     },
 
     // Save match history
-    async saveMatchHistory(sessionId, matchHistory) {
+    async saveMatchHistory(sessionId, matchHistory, userName) {
         if (!supabase) return { error: 'Supabase not initialized' };
         
         // Delete existing history for this session
@@ -77,6 +77,7 @@ const SupabaseDB = {
             totals: match.totals,
             my_finishes: match.myFinishes || 0,
             partner_finishes: match.partnerFinishes || 0,
+            user_name: userName || 'Unknown User',
             created_at: new Date().toISOString()
         }));
         
@@ -132,5 +133,70 @@ const SupabaseDB = {
             .eq('id', sessionId);
         
         return { error };
+    },
+
+    // Get Year to Date leaderboard with all users' stats
+    async getYTDLeaderboard() {
+        if (!supabase) return { error: 'Supabase not initialized' };
+        
+        try {
+            // Get all match history from this year
+            const currentYear = new Date().getFullYear();
+            const yearStart = `${currentYear}-01-01`;
+            
+            const { data: matches, error } = await supabase
+                .from('match_history')
+                .select('session_id, status, totals, user_name, created_at')
+                .gte('created_at', yearStart)
+                .eq('status', 'completed');
+            
+            if (error) return { data: null, error };
+            
+            // Group by user (extract user_id from session_id)
+            const userStats = {};
+            
+            for (const match of matches) {
+                // session_id format: userId_date
+                const userId = match.session_id.split('_')[0];
+                
+                if (!userStats[userId]) {
+                    userStats[userId] = {
+                        userId,
+                        userName: match.user_name || 'Unknown User',
+                        totalScore: 0,
+                        totalDarts: 0,
+                        matchCount: 0
+                    };
+                }
+                
+                if (match.totals) {
+                    userStats[userId].totalScore += match.totals.score || 0;
+                    userStats[userId].totalDarts += match.totals.darts || 0;
+                    userStats[userId].matchCount += 1;
+                }
+            }
+            
+            // Build leaderboard
+            const leaderboard = Object.values(userStats).map(stats => {
+                const average = stats.totalDarts > 0 
+                    ? (stats.totalScore / stats.totalDarts * 3).toFixed(2)
+                    : '0.00';
+                
+                return {
+                    userId: stats.userId,
+                    userName: stats.userName,
+                    matchCount: stats.matchCount,
+                    average: parseFloat(average)
+                };
+            });
+            
+            // Sort by average (descending)
+            leaderboard.sort((a, b) => b.average - a.average);
+            
+            return { data: leaderboard, error: null };
+        } catch (error) {
+            console.error('YTD Leaderboard error:', error);
+            return { data: null, error };
+        }
     }
 };

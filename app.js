@@ -975,7 +975,80 @@ class DartScoreTracker {
             document.getElementById('statsTab').classList.add('active');
             document.querySelector('[data-tab="stats"]').classList.add('active');
             this.updateStatsView();
+        } else if (tabName === 'ytd') {
+            document.getElementById('ytdTab').classList.add('active');
+            document.querySelector('[data-tab="ytd"]').classList.add('active');
+            this.updateYTDView();
         }
+    }
+
+    async updateYTDView() {
+        const ytdContent = document.getElementById('ytdContent');
+        ytdContent.innerHTML = '<div class="ytd-loading">Loading leaderboard...</div>';
+        
+        const { data: leaderboard, error } = await SupabaseDB.getYTDLeaderboard();
+        
+        if (error) {
+            ytdContent.innerHTML = '<div class="ytd-error">Failed to load leaderboard. Please try again.</div>';
+            console.error('YTD error:', error);
+            return;
+        }
+        
+        if (!leaderboard || leaderboard.length === 0) {
+            ytdContent.innerHTML = '<div class="ytd-empty">No stats yet this year. Complete some matches to appear on the leaderboard!</div>';
+            return;
+        }
+        
+        let html = `
+            <div class="ytd-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Name</th>
+                            <th>Matches</th>
+                            <th>Average</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        leaderboard.forEach((user, index) => {
+            const rank = index + 1;
+            let rankClass = 'ytd-rank';
+            let rankDisplay = `#${rank}`;
+            
+            if (rank === 1) {
+                rankClass += ' gold';
+                rankDisplay = '🥇';
+            } else if (rank === 2) {
+                rankClass += ' silver';
+                rankDisplay = '🥈';
+            } else if (rank === 3) {
+                rankClass += ' bronze';
+                rankDisplay = '🥉';
+            }
+            
+            const isCurrentUser = user.userId === this.currentUser?.id;
+            const rowClass = isCurrentUser ? 'style="background: rgba(22, 163, 74, 0.1);"' : '';
+            
+            html += `
+                <tr ${rowClass}>
+                    <td class="${rankClass}">${rankDisplay}</td>
+                    <td class="ytd-name">${user.userName}${isCurrentUser ? ' (You)' : ''}</td>
+                    <td class="ytd-matches">${user.matchCount} matches</td>
+                    <td class="ytd-average">${user.average}</td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        ytdContent.innerHTML = html;
     }
 
     updateHistoryView() {
@@ -1468,7 +1541,7 @@ class DartScoreTracker {
 
             // Save match history
             if (this.matchHistory.length > 0) {
-                await SupabaseDB.saveMatchHistory(this.sessionId, this.matchHistory);
+                await SupabaseDB.saveMatchHistory(this.sessionId, this.matchHistory, this.userName);
             }
 
             console.log('Data saved to Supabase');

@@ -1218,3 +1218,114 @@ td {
 .dart-cell.filled {
     animation: fillCell 0.3s ease;
 }
+
+/* Year to Date Leaderboard Styles */
+.ytd-container {
+    padding: 20px;
+}
+
+.ytd-loading {
+    text-align: center;
+    color: #9ca3af;
+    padding: 40px;
+    font-size: 16px;
+}
+
+.ytd-table {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.ytd-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ytd-table thead {
+    background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+}
+
+.ytd-table thead th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    color: white;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ytd-table thead th:first-child {
+    width: 60px;
+    text-align: center;
+}
+
+.ytd-table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s;
+}
+
+.ytd-table tbody tr:hover {
+    background: rgba(147, 51, 234, 0.1);
+}
+
+.ytd-table tbody td {
+    padding: 14px 16px;
+    color: #e5e7eb;
+    font-size: 15px;
+}
+
+.ytd-rank {
+    text-align: center;
+    font-weight: 700;
+    font-size: 18px;
+    color: #9333ea;
+}
+
+.ytd-rank.gold {
+    color: #fbbf24;
+    font-size: 24px;
+}
+
+.ytd-rank.silver {
+    color: #d1d5db;
+    font-size: 22px;
+}
+
+.ytd-rank.bronze {
+    color: #fb923c;
+    font-size: 20px;
+}
+
+.ytd-name {
+    font-weight: 600;
+    color: #f3f4f6;
+}
+
+.ytd-matches {
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.ytd-average {
+    font-weight: 700;
+    font-size: 18px;
+    color: #16a34a;
+}
+
+.ytd-error {
+    text-align: center;
+    color: #ef4444;
+    padding: 40px;
+    font-size: 16px;
+}
+
+.ytd-empty {
+    text-align: center;
+    color: #9ca3af;
+    padding: 40px;
+    font-size: 16px;
+}

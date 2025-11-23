@@ -43,6 +43,7 @@
             <button class="tab active" data-tab="current">📋 Current</button>
             <button class="tab" data-tab="history">🕐 History (<span id="historyCount">0</span>)</button>
             <button class="tab" data-tab="stats">📊 Overall Stats</button>
+            <button class="tab" data-tab="ytd">🏆 Year to Date</button>
         </div>
 
         <div id="currentTab" class="tab-content active">
@@ -223,6 +224,13 @@
             <button id="clearAllStatsBtn" class="clear-stats-button">
                 🗑️ Clear All Stats & Start Fresh
             </button>
+        </div>
+
+        <div id="ytdTab" class="tab-content">
+            <h2>🏆 Year to Date Leaderboard</h2>
+            <div id="ytdContent" class="ytd-container">
+                <div class="ytd-loading">Loading leaderboard...</div>
+            </div>
         </div>
     </div>
 
