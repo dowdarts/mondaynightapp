@@ -1001,10 +1001,9 @@ class DartScoreTracker {
         
         // Cancel on blur
         input.addEventListener('blur', () => {
+            if (!cell.contains(input)) return;
             cell.classList.remove('editing-input');
-            if (cell.contains(input)) {
-                cell.removeChild(input);
-            }
+            cell.removeChild(input);
             cell.textContent = currentValue;
         });
     }
