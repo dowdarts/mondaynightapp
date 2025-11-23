@@ -45,7 +45,6 @@ h1 {
     gap: 5px;
     margin-bottom: 15px;
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
 }
 
 .tab {
@@ -76,7 +75,6 @@ h1 {
     overflow-x: auto;
     overflow-y: visible;
     margin-bottom: 15px;
-    -webkit-overflow-scrolling: touch;
 }
 
 table {
