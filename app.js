@@ -446,12 +446,21 @@ class DartScoreTracker {
             document.querySelector(`.avg[data-game="${game}"]`).textContent = '-';
         }
 
+        // Remove existing match with same number if it exists (prevent duplicates)
+        const existingIndex = this.matchHistory.findIndex(m => m.match === this.currentMatch);
+        if (existingIndex !== -1) {
+            this.matchHistory.splice(existingIndex, 1);
+        }
+        
         // Save match as sit out
         this.matchHistory.push({
             match: this.currentMatch,
             status: 'sit-out',
             gameData: JSON.parse(JSON.stringify(this.gameData))
         });
+
+        // Sort history by match number to maintain order
+        this.matchHistory.sort((a, b) => a.match - b.match);
 
         // Save to database
         this.saveToDatabase();
@@ -518,6 +527,12 @@ class DartScoreTracker {
             if (this.gameData[game].finishType === 'partner') partnerFinishes++;
         }
 
+        // Remove existing match with same number if it exists (prevent duplicates)
+        const existingIndex = this.matchHistory.findIndex(m => m.match === this.currentMatch);
+        if (existingIndex !== -1) {
+            this.matchHistory.splice(existingIndex, 1);
+        }
+        
         // Save current match
         this.matchHistory.push({
             match: this.currentMatch,
@@ -532,6 +547,9 @@ class DartScoreTracker {
             partnerFinishes: partnerFinishes
         });
         
+        // Sort history by match number to maintain order
+        this.matchHistory.sort((a, b) => a.match - b.match);
+        
         // Save to database
         this.saveToDatabase();
         
@@ -545,12 +563,24 @@ class DartScoreTracker {
     }
 
     startNextMatch() {
-        this.currentMatch++;
+        // Find the next available match number (lowest number not in history)
+        const allMatchNumbers = this.matchHistory.map(m => m.match);
+        let nextMatch = null;
         
-        if (this.currentMatch > 5) {
+        for (let i = 1; i <= 5; i++) {
+            if (!allMatchNumbers.includes(i)) {
+                nextMatch = i;
+                break;
+            }
+        }
+        
+        // If all matches are complete, show nightly totals
+        if (nextMatch === null) {
             this.showNightlyTotals();
             return;
         }
+        
+        this.currentMatch = nextMatch;
         
         // Reset for new match
         this.currentGame = 1;
