@@ -927,7 +927,7 @@ class DartScoreTracker {
         // Save to database and update views
         this.saveToDatabase();
         this.updateHistoryView();
-        this.updateOverallStats();
+        this.updateStatsView();
     }
 
     editHistoryCell(cell) {
@@ -1606,7 +1606,7 @@ class DartScoreTracker {
             
             await this.saveToDatabase();
             this.updateHistoryView();
-            this.updateOverallStats();
+            this.updateStatsView();
             document.body.removeChild(modal);
             
             // Show edit modal for the now-normal match
@@ -1720,7 +1720,7 @@ class DartScoreTracker {
             
             // Update views
             this.updateHistoryView();
-            this.updateOverallStats();
+            this.updateStatsView();
             document.getElementById('historyCount').textContent = this.matchHistory.length;
         });
     }
