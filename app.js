@@ -562,6 +562,7 @@ class DartScoreTracker {
                             <h3>Match ${match.match}</h3>
                             <div class="history-header-buttons">
                                 <span class="status-badge sit-out">SIT OUT</span>
+                                <button class="edit-match-btn" data-match-index="${index}">✏️ Edit</button>
                                 <button class="delete-match-btn" data-match-index="${index}">🗑️ Delete</button>
                             </div>
                         </div>
@@ -839,7 +840,13 @@ class DartScoreTracker {
 
     showEditMatchModal(matchIndex) {
         const match = this.matchHistory[matchIndex];
-        if (!match || match.status === 'sit-out') return;
+        if (!match) return;
+
+        // Handle sit-out matches separately
+        if (match.status === 'sit-out') {
+            this.showEditSitOutModal(matchIndex);
+            return;
+        }
 
         const modal = document.createElement('div');
         modal.className = 'finish-modal edit-match-modal';
@@ -1261,6 +1268,64 @@ class DartScoreTracker {
         this.switchTab('current');
 
         alert('Ready for a new night! All previous data has been cleared.');
+    }
+
+    showEditSitOutModal(matchIndex) {
+        const match = this.matchHistory[matchIndex];
+        
+        const modal = document.createElement('div');
+        modal.className = 'finish-modal';
+        
+        modal.innerHTML = `
+            <div class="finish-modal-content">
+                <h2>Edit Match ${match.match}</h2>
+                <p style="color: #9ca3af; margin-bottom: 30px;">This match is marked as a sit-out. What would you like to do?</p>
+                <div class="finish-options" style="display: flex; flex-direction: column; gap: 15px;">
+                    <button class="finish-btn" id="convertToNormalBtn" style="background: #16a34a;">
+                        Convert to Normal Match
+                    </button>
+                    <button class="finish-btn" id="deleteSitOutBtn" style="background: #dc2626;">
+                        Delete This Match
+                    </button>
+                    <button class="finish-btn" id="cancelSitOutBtn" style="background: #64748b;">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Convert to normal match
+        document.getElementById('convertToNormalBtn').addEventListener('click', async () => {
+            match.status = 'completed';
+            match.gameData = {
+                1: { scores: [], totalScore: 0, totalDarts: 0, tons: 0, finish: '', finishType: 'none', avg: 0 },
+                2: { scores: [], totalScore: 0, totalDarts: 0, tons: 0, finish: '', finishType: 'none', avg: 0 },
+                3: { scores: [], totalScore: 0, totalDarts: 0, tons: 0, finish: '', finishType: 'none', avg: 0 }
+            };
+            match.totals = { score: 0, darts: 0, tons: 0, avg: 0 };
+            match.myFinishes = 0;
+            
+            await this.saveToDatabase();
+            this.updateHistoryView();
+            this.updateOverallStats();
+            document.body.removeChild(modal);
+            
+            // Show edit modal for the now-normal match
+            setTimeout(() => this.showEditMatchModal(matchIndex), 100);
+        });
+        
+        // Delete match
+        document.getElementById('deleteSitOutBtn').addEventListener('click', async () => {
+            document.body.removeChild(modal);
+            await this.deleteMatch(matchIndex);
+        });
+        
+        // Cancel
+        document.getElementById('cancelSitOutBtn').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
     }
 
     async deleteMatch(matchIndex) {
