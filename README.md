@@ -105,15 +105,50 @@ This app now supports persistent data storage using Supabase! Your scores and ma
 
 **Without Supabase:** The app will still work but data will only persist during the current browser session (stored in memory only)
 
+## Progressive Web App (PWA)
+
+This app can be installed on your phone like a native app!
+
+### Installation Benefits
+- 📱 **Add to Home Screen**: Appears as an app icon on your phone
+- 🚀 **Full-Screen Mode**: Runs without browser UI for immersive experience
+- 📶 **Works Offline**: Access your app even without internet connection
+- ⚡ **Fast Loading**: Cached for instant startup
+- 🔄 **Auto-Updates**: Always get the latest version
+
+### How to Install
+
+**Android (Chrome/Edge):**
+1. Open the app in Chrome or Edge browser
+2. Tap the menu (⋮) → "Add to Home screen" or "Install app"
+3. Confirm installation
+4. Tap the new icon on your home screen to launch
+
+**iPhone/iPad (Safari):**
+1. Open the app in Safari
+2. Tap the Share button (□↑) → "Add to Home Screen"
+3. Confirm and tap "Add"
+4. Launch from your home screen
+
+**Desktop (Chrome/Edge):**
+- Look for the install icon (⊕) in the address bar
+- Click to install as a desktop app
+
+**Detailed Instructions:** See `PWA_INSTALLATION.md` for full setup guide, including:
+- Creating app icons from SVG template
+- Testing PWA functionality
+- Serving the app on your local network
+- Production deployment options
+
 ## Future Enhancements
 
 Potential features for future versions:
-- Local storage persistence between sessions
 - Export to CSV or PDF
 - Print-friendly score sheets
 - Player profiles and comparison
 - Season-long statistics
-- Cloud backup integration
+- Push notifications for match reminders
+- Share scores via social media
 
 ## License
 
@@ -125,5 +160,5 @@ For issues or questions about using the app, please refer to the game flow instr
 
 ---
 
-**Version**: 1.0  
-**Last Updated**: November 2025
+**Version**: 2.0 (PWA Enabled)  
+**Last Updated**: January 2025
