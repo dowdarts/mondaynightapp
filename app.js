@@ -420,6 +420,8 @@ class DartScoreTracker {
         const score = parseInt(this.currentInput);
         if (isNaN(score)) return;
 
+        console.log(`Entering score ${score} at Game ${this.currentGame}, Dart Box ${this.currentDartBox}`);
+
         // Add score to current dart box
         const cell = document.querySelector(`.dart-cell[data-game="${this.currentGame}"][data-dart="${this.currentDartBox}"]`);
         if (cell) {
@@ -440,6 +442,9 @@ class DartScoreTracker {
 
             // Move to next dart box
             this.moveToNextDartBox();
+            console.log(`Moved to Dart Box ${this.currentDartBox}`);
+        } else {
+            console.error(`Cell not found for Game ${this.currentGame}, Dart Box ${this.currentDartBox}`);
         }
 
         this.currentInput = '';
