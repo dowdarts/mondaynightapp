@@ -468,6 +468,8 @@ class DartScoreTracker {
     }
 
     showFinishGamePrompt() {
+        console.log('showFinishGamePrompt called');
+        
         // Create modal for finish options
         const modal = document.createElement('div');
         modal.className = 'finish-modal';
@@ -488,8 +490,11 @@ class DartScoreTracker {
         let selectedResult = 'win';
         const buttons = modal.querySelectorAll('.finish-btn');
         
+        console.log('Buttons found:', buttons.length);
+        
         // Function to update selection
         const updateSelection = (result) => {
+            console.log('Update selection:', result);
             selectedResult = result;
             buttons.forEach(btn => {
                 if (btn.dataset.result === result) {
@@ -500,8 +505,19 @@ class DartScoreTracker {
             });
         };
 
+        // Function to close modal and cleanup
+        const closeModal = () => {
+            console.log('Closing modal');
+            if (document.body.contains(modal)) {
+                document.body.removeChild(modal);
+            }
+            document.removeEventListener('keydown', keyHandler, true);
+        };
+
         // Keyboard handler
         const keyHandler = (e) => {
+            console.log('Key pressed in finish modal:', e.key);
+            
             if (e.key === '1') {
                 e.preventDefault();
                 e.stopPropagation();
@@ -517,30 +533,27 @@ class DartScoreTracker {
             } else if (e.key === 'Enter') {
                 e.preventDefault();
                 e.stopPropagation();
+                console.log('Enter pressed, selected:', selectedResult);
                 this.handleFinishResult(selectedResult);
-                if (document.body.contains(modal)) {
-                    document.body.removeChild(modal);
-                }
-                document.removeEventListener('keydown', keyHandler);
+                closeModal();
             } else if (e.key === 'Escape') {
                 e.preventDefault();
                 e.stopPropagation();
-                if (document.body.contains(modal)) {
-                    document.body.removeChild(modal);
-                }
-                document.removeEventListener('keydown', keyHandler);
+                closeModal();
             }
         };
 
+        // Add keyboard listener with capture
         document.addEventListener('keydown', keyHandler, true);
         
         // Add click handlers
         buttons.forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const result = e.target.dataset.result || e.target.closest('.finish-btn').dataset.result;
+                console.log('Button clicked:', result);
                 this.handleFinishResult(result);
-                document.body.removeChild(modal);
-                document.removeEventListener('keydown', keyHandler);
+                closeModal();
             });
         });
     }
