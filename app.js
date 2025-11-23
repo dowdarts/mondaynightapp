@@ -753,8 +753,21 @@ class DartScoreTracker {
         const confirmLogout = confirm('Are you sure you want to logout? Your data is saved.');
         if (!confirmLogout) return;
         
-        await supabase.auth.signOut();
-        location.reload();
+        try {
+            if (supabase && supabase.auth) {
+                await supabase.auth.signOut();
+            }
+            // Clear local data
+            this.currentUser = null;
+            this.userName = '';
+            localStorage.clear();
+            location.reload();
+        } catch (error) {
+            console.error('Logout error:', error);
+            // Force reload anyway
+            localStorage.clear();
+            location.reload();
+        }
     }
 
     nightDone() {
