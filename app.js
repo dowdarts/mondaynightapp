@@ -1186,7 +1186,12 @@ class DartScoreTracker {
             const { data: historyData, error: historyError } = await SupabaseDB.loadMatchHistory(this.sessionId);
             
             if (historyData && !historyError) {
-                this.matchHistory = historyData;
+                // Remove duplicates - keep only the last occurrence of each match number
+                const uniqueMatches = new Map();
+                historyData.forEach(match => {
+                    uniqueMatches.set(match.match, match);
+                });
+                this.matchHistory = Array.from(uniqueMatches.values()).sort((a, b) => a.match - b.match);
             }
 
             console.log('Data loaded from Supabase');
