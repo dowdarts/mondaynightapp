@@ -1499,8 +1499,63 @@ class DartScoreTracker {
         document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
             document.body.removeChild(modal);
             
+            const deletedMatchNumber = match.match;
+            
             // Remove from history array
             this.matchHistory.splice(matchIndex, 1);
+            
+            // Check if we should return to this match as current
+            // If the deleted match number is less than or equal to current match
+            // and we haven't completed all 5 matches, return to it
+            const allMatchNumbers = this.matchHistory.map(m => m.match);
+            const missingMatches = [];
+            for (let i = 1; i <= 5; i++) {
+                if (!allMatchNumbers.includes(i)) {
+                    missingMatches.push(i);
+                }
+            }
+            
+            // If there are missing match numbers, set current match to the lowest missing one
+            if (missingMatches.length > 0 && deletedMatchNumber <= this.currentMatch) {
+                const lowestMissing = Math.min(...missingMatches);
+                this.currentMatch = lowestMissing;
+                this.matchComplete = false;
+                
+                // Reset current match data
+                this.currentGame = 1;
+                this.currentDartBox = 3;
+                this.currentInput = '';
+                this.gameData = {
+                    1: { scores: [], totalScore: 0, totalDarts: 0, tons: 0, finish: '', avg: 0 },
+                    2: { scores: [], totalScore: 0, totalDarts: 0, tons: 0, finish: '', avg: 0 },
+                    3: { scores: [], totalScore: 0, totalDarts: 0, tons: 0, finish: '', avg: 0 }
+                };
+                
+                // Clear all cells
+                document.querySelectorAll('.dart-cell').forEach(cell => {
+                    cell.textContent = '';
+                    cell.classList.remove('filled', 'end-marker', 'active', 'high-score', 'scratched');
+                });
+                
+                // Reset totals
+                for (let game = 1; game <= 3; game++) {
+                    document.querySelector(`.score[data-game="${game}"]`).textContent = '0';
+                    document.querySelector(`.darts[data-game="${game}"]`).textContent = '-';
+                    document.querySelector(`.tons[data-game="${game}"]`).textContent = '0';
+                    document.querySelector(`.finish[data-game="${game}"]`).textContent = '';
+                    document.querySelector(`.avg[data-game="${game}"]`).textContent = '0';
+                }
+                
+                document.getElementById('totalScore').textContent = '0';
+                document.getElementById('totalDarts').textContent = '0';
+                document.getElementById('dartAvg').textContent = '0.00';
+                
+                this.updateMatchDisplay();
+                this.highlightCurrentCell();
+                
+                // Switch to current tab
+                this.switchTab('current');
+            }
             
             // Save to database
             await this.saveToDatabase();
