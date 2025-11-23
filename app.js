@@ -1566,13 +1566,14 @@ class DartScoreTracker {
                 <div class="finish-modal-content">
                     <h2 style="color: #16a34a;">✅ Stats Saved!</h2>
                     <p style="color: #9ca3af; margin: 20px 0;">Your nightly stats have been saved to the Year to Date leaderboard.</p>
-                    <button class="finish-btn win" id="doneBtn">Done</button>
+                    <button class="finish-btn win" id="startNewNightBtn">🌙 Start New Night</button>
                 </div>
             `;
             document.body.appendChild(successModal);
 
-            document.getElementById('doneBtn').addEventListener('click', () => {
+            document.getElementById('startNewNightBtn').addEventListener('click', async () => {
                 document.body.removeChild(successModal);
+                await this.startNewNight();
             });
 
         } catch (error) {
@@ -1726,6 +1727,19 @@ class DartScoreTracker {
 
         // Recalculate match totals
         this.calculateMatchTotals();
+    }
+
+    async startNewNight() {
+        // Clear session from database (match history and current session)
+        if (supabase) {
+            await SupabaseDB.clearSession(this.sessionId);
+        }
+
+        // Clear local storage session data
+        localStorage.removeItem('dart_session_id');
+        
+        // Reload the page to start fresh
+        window.location.reload();
     }
 
     async resetForNewNight() {
