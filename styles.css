@@ -541,16 +541,11 @@ td {
     transition: all 0.2s;
 }
 
-.scoring-table.locked .history-dart-cell {
-    cursor: default;
-    pointer-events: none;
-}
-
-.scoring-table.editing .history-dart-cell {
+.history-dart-cell {
     cursor: pointer;
 }
 
-.scoring-table.editing .history-dart-cell:hover:not(.end-marker) {
+.history-dart-cell:hover:not(.end-marker):not(.editing-input) {
     background: #dbeafe;
     border-color: #3b82f6;
 }
@@ -595,6 +590,18 @@ td {
     text-align: center;
     padding: 4px;
     box-sizing: border-box;
+}
+
+/* Hide spinner arrows for number inputs */
+.cell-edit-input::-webkit-inner-spin-button,
+.cell-edit-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.cell-edit-input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .cell-edit-input:focus {

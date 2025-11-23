@@ -725,7 +725,7 @@ class DartScoreTracker {
             });
         });
         
-        // Add click handlers for cells in edit mode
+        // Add click handlers for cells only in edit mode
         document.querySelectorAll('.history-dart-cell').forEach(cell => {
             cell.addEventListener('click', (e) => {
                 const container = e.target.closest('.history-match-container');
@@ -939,41 +939,75 @@ class DartScoreTracker {
         
         const currentValue = cell.textContent.trim();
         const input = document.createElement('input');
-        input.type = 'number';
+        input.type = 'tel';
         input.className = 'cell-edit-input';
-        input.value = currentValue === '' ? '' : currentValue;
-        input.min = '0';
-        input.max = '180';
+        input.value = '';
+        input.placeholder = currentValue || '0';
         
+        cell.classList.add('editing-input');
         cell.textContent = '';
         cell.appendChild(input);
         input.focus();
-        input.select();
         
-        const saveEdit = () => {
+        const saveEdit = async () => {
             const newValue = input.value.trim();
-            cell.removeChild(input);
+            cell.classList.remove('editing-input');
             
-            if (newValue === '' || isNaN(newValue)) {
-                // Remove score
-                this.removeHistoryScore(matchIndex, game, dartBox);
-            } else {
-                // Update score
-                this.updateHistoryScore(matchIndex, game, dartBox, parseInt(newValue));
+            if (cell.contains(input)) {
+                cell.removeChild(input);
             }
             
+            if (newValue === '') {
+                // Keep original value if nothing entered
+                cell.textContent = currentValue;
+                return;
+            }
+            
+            const numValue = parseInt(newValue);
+            if (isNaN(numValue) || numValue < 0 || numValue > 180) {
+                // Invalid value, revert
+                cell.textContent = currentValue;
+                return;
+            }
+            
+            // Update score
+            this.updateHistoryScore(matchIndex, game, dartBox, numValue);
+            
+            // Save to database
+            await this.saveToDatabase();
+            
+            // Update views
             this.updateHistoryView();
+            this.updateOverallStats();
         };
         
-        input.addEventListener('blur', saveEdit);
+        const cancelEdit = () => {
+            cell.classList.remove('editing-input');
+            if (cell.contains(input)) {
+                cell.removeChild(input);
+            }
+            cell.textContent = currentValue;
+        };
+        
         input.addEventListener('keydown', (e) => {
+            // Only allow numbers, backspace, delete, enter, escape
             if (e.key === 'Enter') {
+                e.preventDefault();
                 saveEdit();
             } else if (e.key === 'Escape') {
-                cell.removeChild(input);
-                cell.textContent = currentValue;
+                e.preventDefault();
+                cancelEdit();
+            } else if (!/^[0-9]$/.test(e.key) && 
+                       e.key !== 'Backspace' && 
+                       e.key !== 'Delete' && 
+                       e.key !== 'ArrowLeft' && 
+                       e.key !== 'ArrowRight' &&
+                       e.key !== 'Tab') {
+                e.preventDefault();
             }
         });
+        
+        input.addEventListener('blur', cancelEdit);
     }
 
     updateHistoryScore(matchIndex, game, dartBox, newScore) {
