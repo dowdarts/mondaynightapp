@@ -954,13 +954,12 @@ class DartScoreTracker {
         cell.classList.add('editing-input');
         cell.innerHTML = '';
         cell.appendChild(input);
-        input.focus();
-        input.select();
         
-        // Filter input to numbers only
-        input.addEventListener('input', (e) => {
-            input.value = input.value.replace(/[^0-9]/g, '');
-        });
+        // Small delay to ensure input is in DOM
+        setTimeout(() => {
+            input.focus();
+            input.select();
+        }, 10);
         
         // Handle keyboard input
         input.addEventListener('keydown', (e) => {
