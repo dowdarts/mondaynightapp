@@ -201,53 +201,61 @@ const SupabaseDB = {
         return await this.loadMatchHistory(sessionId);
     },
 
-    // Get Year to Date leaderboard from nightly_stats
-    // This aggregates all saved nights (not individual matches) for YTD totals
+    // Get Year to Date leaderboard from match_history
+    // This aggregates all individual matches for accurate YTD totals
     async getYTDLeaderboard() {
         if (!supabase) return { error: 'Supabase not initialized' };
         
         try {
-            // Get all nightly stats from this year (match_history stays intact for historical data)
+            // Get all match history from this year
             const currentYear = new Date().getFullYear();
             const yearStart = `${currentYear}-01-01`;
             
-            const { data: nightlyStats, error } = await supabase
-                .from('nightly_stats')
+            const { data: matches, error } = await supabase
+                .from('match_history')
                 .select('*')
-                .gte('session_date', yearStart);
+                .gte('created_at', yearStart);
             
             if (error) return { data: null, error };
             
-            console.log(`📊 YTD Leaderboard: Found ${nightlyStats?.length || 0} saved sessions from ${currentYear}`);
+            console.log(`📊 YTD Leaderboard: Found ${matches?.length || 0} matches from ${currentYear}`);
             
-            // Group by user
+            // Group by user - extract user_id from session_id (format: userId_YYYY-MM-DD)
             const userStats = {};
+            const sessionDates = {}; // Track unique session dates per user
             
-            for (const night of nightlyStats) {
-                if (!userStats[night.user_id]) {
-                    userStats[night.user_id] = {
-                        userId: night.user_id,
-                        userName: night.user_name,
+            for (const match of matches) {
+                // Skip sit-out matches
+                if (match.status === 'sit-out') continue;
+                
+                // Extract user_id from session_id (format: userId_YYYY-MM-DD)
+                const userId = match.session_id.split('_')[0];
+                
+                if (!userStats[userId]) {
+                    userStats[userId] = {
+                        userId: userId,
+                        userName: match.user_name,
                         totalScore: 0,
                         totalDarts: 0,
                         totalTons: 0,
-                        totalFinishes: 0,
-                        nightsPlayed: 0,
-                        avgScores: []
+                        totalFinishes: 0
                     };
+                    sessionDates[userId] = new Set();
                 }
                 
-                userStats[night.user_id].totalScore += night.total_score || 0;
-                userStats[night.user_id].totalDarts += night.total_darts || 0;
-                userStats[night.user_id].totalTons += night.total_tons || 0;
-                userStats[night.user_id].totalFinishes += night.total_finishes || 0;
-                userStats[night.user_id].nightsPlayed += 1;
-                userStats[night.user_id].avgScores.push(night.avg_score || 0);
+                // Add match totals
+                userStats[userId].totalScore += match.totals?.score || 0;
+                userStats[userId].totalDarts += match.totals?.darts || 0;
+                userStats[userId].totalTons += match.totals?.tons || 0;
+                userStats[userId].totalFinishes += match.my_finishes || 0;
+                
+                // Track unique session dates
+                sessionDates[userId].add(match.session_id);
             }
             
             // Build leaderboard
             const leaderboard = Object.values(userStats).map(stats => {
-                // Calculate overall average from all nights
+                // Calculate overall average from all matches
                 const overallAvg = stats.totalDarts > 0 
                     ? parseFloat((stats.totalScore / stats.totalDarts).toFixed(2))
                     : 0.00;
@@ -255,7 +263,7 @@ const SupabaseDB = {
                 return {
                     userId: stats.userId,
                     userName: stats.userName,
-                    nightsPlayed: stats.nightsPlayed,
+                    nightsPlayed: sessionDates[stats.userId].size,
                     average: overallAvg,
                     tons: stats.totalTons,
                     finishes: stats.totalFinishes
