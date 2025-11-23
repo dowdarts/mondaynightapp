@@ -516,23 +516,23 @@ const DartsApp = () => {
   const renderTable = (gamesData, isReadOnly = false) => {
     
     return (
-      <div className="w-full bg-white text-slate-900 rounded-lg shadow-xl overflow-hidden mb-4 text-xs sm:text-sm border border-slate-200">
+      <div className="w-full bg-slate-800 text-white rounded-lg shadow-xl overflow-hidden mb-6 text-sm sm:text-base">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px] border-collapse">
             <thead>
-              <tr className="bg-slate-200">
-                <th className="border p-2 w-12">Game</th>
-                <th className="border p-2 text-center" colSpan={7}>Darts</th>
-                <th className="border p-2 text-center bg-slate-300" colSpan={5}>Totals</th>
+              <tr className="bg-gradient-to-r from-slate-700 to-slate-600 text-white">
+                <th className="border border-slate-600 p-3 sm:p-4 w-16 font-black">Game</th>
+                <th className="border border-slate-600 p-3 sm:p-4 text-center font-black" colSpan={7}>\ud83c\udfaf Darts Thrown</th>
+                <th className="border border-slate-600 p-3 sm:p-4 text-center bg-slate-800/50 font-black" colSpan={5}>\ud83d\udcca Totals</th>
               </tr>
-              <tr className="bg-slate-100 text-slate-600">
-                <th className="border p-1"></th>
-                {COL_HEADERS.map(h => <th key={h} className="border p-1 w-12 text-center">{h}</th>)}
-                <th className="border p-1 w-14 bg-emerald-50">Score</th>
-                <th className="border p-1 w-12 bg-emerald-50">Darts</th>
-                <th className="border p-1 w-10 bg-emerald-50">Tons</th>
-                <th className={`border p-1 w-12 bg-emerald-50 ${isEditing && !isReadOnly ? 'cursor-pointer hover:bg-emerald-200' : ''}`}>Finish</th>
-                <th className="border p-1 w-14 bg-emerald-50">Avg</th>
+              <tr className="bg-gradient-to-r from-slate-200 to-slate-100 text-slate-700 font-bold">
+                <th className="border border-slate-300 p-2"></th>
+                {COL_HEADERS.map(h => <th key={h} className="border border-slate-300 p-2 w-14 sm:w-16 text-center font-black text-sm sm:text-base">{h}</th>)}
+                <th className="border border-slate-300 p-2 w-16 sm:w-20 bg-gradient-to-br from-emerald-100 to-emerald-50 font-black">Score</th>
+                <th className="border border-slate-300 p-2 w-14 sm:w-16 bg-gradient-to-br from-emerald-100 to-emerald-50 font-black">Darts</th>
+                <th className="border border-slate-300 p-2 w-12 sm:w-14 bg-gradient-to-br from-emerald-100 to-emerald-50 font-black">Tons</th>
+                <th className={`border border-slate-300 p-2 w-14 sm:w-16 bg-gradient-to-br from-emerald-100 to-emerald-50 font-black ${isEditing && !isReadOnly ? 'cursor-pointer hover:bg-emerald-300 transition-colors' : ''}`}>Finish</th>
+                <th className="border border-slate-300 p-2 w-16 sm:w-20 bg-gradient-to-br from-emerald-100 to-emerald-50 font-black">Avg</th>
               </tr>
             </thead>
             <tbody>
@@ -540,18 +540,18 @@ const DartsApp = () => {
                   const satOutRowClasses = game.isSatOut ? 'bg-amber-950/40 line-through italic text-slate-400' : '';
 
                   return (
-                  <tr key={game.id} className={`${!isReadOnly && activeGameIdx === gIdx && !isEditing ? 'bg-blue-50' : 'bg-white'} ${isEditing && activeGameIdx === gIdx ? 'bg-amber-50' : ''} ${satOutRowClasses}`}>
-                    <td className="border p-2 text-center font-bold bg-slate-100">{game.id}</td>
+                  <tr key={game.id} className={`${!isReadOnly && activeGameIdx === gIdx && !isEditing ? 'bg-slate-700' : 'bg-slate-800'} ${isEditing && activeGameIdx === gIdx ? 'bg-slate-700' : ''} ${satOutRowClasses} transition-colors`}>
+                    <td className="border border-slate-600 p-2 text-center font-bold text-base bg-slate-700">{game.id}</td>
                     {game.scores.map((score, cIdx) => {
                       const isActive = !isReadOnly && activeGameIdx === gIdx && activeColIdx === cIdx && !game.isSatOut;
                       const isTon = typeof score === 'number' && score >= 95;
                       const isFinishSlash = score === '/';
                       
-                      let cellClasses = `border p-2 text-center font-mono text-lg h-10 w-12 relative ${isEditing && !isReadOnly && !game.isSatOut ? 'cursor-pointer hover:bg-yellow-100' : ''}`;
+                      let cellClasses = `border border-slate-600 p-2 text-center font-mono text-base sm:text-lg h-12 sm:h-14 w-12 sm:w-14 relative transition-all touch-manipulation ${isEditing && !isReadOnly && !game.isSatOut ? 'cursor-pointer hover:bg-slate-700' : ''}`;
                       if (isActive) {
-                        cellClasses += ` bg-blue-200 ring-2 ring-inset ring-blue-500`;
+                        cellClasses += ` bg-emerald-200 text-slate-900 ring-2 ring-inset ring-blue-400`;
                       } else if (isFinishSlash) {
-                          cellClasses += ` bg-slate-200`;
+                          cellClasses += ` bg-slate-700`;
                       }
 
                       return (
@@ -561,42 +561,42 @@ const DartsApp = () => {
                           onClick={() => handleScoreCellClick(gIdx, cIdx)}
                         >
                           {isActive ? (
-                            <span className="text-blue-800 font-bold">{currentInput}<span className="animate-pulse">|</span></span>
+                            <span className="text-slate-900 font-bold text-lg">{currentInput}<span className="animate-pulse">|</span></span>
                           ) : game.isSatOut ? (
-                              <span className="text-slate-500">S/O</span>
+                              <span className="text-slate-500 text-xs font-bold">S/O</span>
                           ) : (
                             isTon ? (
                               <div className="flex items-center justify-center w-full h-full">
-                                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full border-2 border-red-500 text-slate-900 font-bold">{score}</span>
+                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-600 text-white font-bold text-xs">{score}</span>
                               </div>
                             ) : (
-                              <span className={isFinishSlash ? 'text-slate-400 font-bold' : 'text-slate-800'}>{score}</span>
+                              <span className={isFinishSlash ? 'text-slate-400 font-bold' : 'text-white font-semibold'}>{score}</span>
                             )
                           )}
                         </td>
                       );
                     })}
-                    <td className="border p-2 text-center font-bold bg-emerald-50">{game.totalScore}</td>
-                    <td className="border p-2 text-center text-slate-600 bg-emerald-50">{game.totalDarts || '-'}</td>
-                    <td className="border p-2 text-center text-slate-600 bg-emerald-50">{game.tons}</td>
+                    <td className="border border-slate-600 p-2 text-center font-bold text-base bg-slate-900/50">{game.totalScore}</td>
+                    <td className="border border-slate-600 p-2 text-center text-slate-300 bg-slate-900/50">{game.totalDarts || '-'}</td>
+                    <td className="border border-slate-600 p-2 text-center text-slate-300 bg-slate-900/50">{game.tons}</td>
                     {/* Finish Column */}
                     <td 
-                        className={`border p-2 text-center font-bold bg-emerald-50 ${isEditing && !isReadOnly ? 'cursor-pointer hover:bg-emerald-200' : ''}`}
+                        className={`border border-slate-600 p-2 text-center font-bold bg-slate-900/50 ${isEditing && !isReadOnly ? 'cursor-pointer hover:bg-slate-700 transition-all touch-manipulation' : ''}`}
                         onClick={() => handleFinishCellClick(gIdx)}
                     >
                       <div className="flex justify-center items-center h-full">
                         {game.finish === 'S/O' ? (
-                          <UserMinus size={20} className="text-amber-600" title="Sat Out" />
+                          <UserMinus size={18} className="text-amber-500" title="Sat Out" />
                         ) : game.finish === 'M' ? (
-                          <Check size={20} className="text-emerald-600" title="My Finish" />
+                          <Check size={20} className="text-emerald-400" title="My Finish" />
                         ) : game.finish === 'P' ? (
-                          <Check size={20} className="text-orange-500" title="Partner's Finish" />
+                          <Check size={20} className="text-orange-400" title="Partner's Finish" />
                         ) : game.finish === '' && game.isComplete ? (
                           <X size={20} className="text-red-500" title="Game Lost" />
                         ) : ''}
                       </div>
                     </td>
-                    <td className="border p-2 text-center text-slate-600 bg-emerald-50">{game.avg}</td>
+                    <td className="border border-slate-600 p-2 text-center text-white font-bold text-base bg-slate-900/50">{game.avg}</td>
                   </tr>
               );})}
             </tbody>
@@ -617,30 +617,35 @@ const DartsApp = () => {
       ];
 
       return (
-          <div className="w-full max-w-5xl animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
-              <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-2xl mb-8">
-                  <div className="flex items-center gap-3 mb-4 border-b border-slate-700 pb-3">
-                      <TrendingUp size={28} className="text-yellow-400" />
-                      <h2 className="text-2xl font-bold text-yellow-300">Overall 1-Dart Average</h2>
+          <div className="w-full max-w-7xl animate-fadeInUp pb-10">
+              <div className="bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 p-6 sm:p-8 lg:p-10 rounded-3xl border-2 border-slate-600 shadow-2xl mb-8">
+                  <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 pb-4 border-b-2 border-slate-600">
+                      <div className="bg-gradient-to-br from-yellow-500 to-amber-600 p-3 rounded-2xl shadow-xl">
+                          <TrendingUp size={32} className="text-white" />
+                      </div>
+                      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-500">Overall 1-Dart Average</h2>
                   </div>
-                  <div className="flex justify-between items-end">
-                      <div className="text-slate-400 font-semibold">Across {stats.completedGamesCount} games played</div>
-                      <span className="text-6xl font-extrabold text-yellow-400 font-mono tracking-tighter">
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                      <div className="text-slate-300 font-bold text-base sm:text-lg">Across <span className="text-yellow-400 font-black text-xl">{stats.completedGamesCount}</span> games played</div>
+                      <span className="text-6xl sm:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500 font-mono tracking-tighter drop-shadow-2xl">
                           {stats.overallAvg}
                       </span>
                   </div>
               </div>
 
-              <h3 className="text-xl font-bold text-slate-200 mb-4">Cumulative Match Totals</h3>
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-200 mb-6 flex items-center gap-3">
+                  <Trophy className="text-yellow-400" size={32} />
+                  Cumulative Totals
+              </h3>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                   {statItems.map((item, index) => (
-                      <div key={index} className="bg-slate-800 p-4 rounded-lg border-t-4 border-slate-600 shadow-lg flex flex-col justify-between h-full">
-                          <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm text-slate-400 uppercase font-semibold tracking-wider">{item.label}</span>
-                              <item.icon size={20} className={item.color} />
+                      <div key={index} className="bg-gradient-to-br from-slate-800 to-slate-700 p-5 sm:p-6 rounded-2xl border-2 border-slate-600 shadow-2xl flex flex-col justify-between h-full hover:scale-105 transition-all duration-300">
+                          <div className="flex justify-between items-center mb-3">
+                              <span className="text-xs sm:text-sm text-slate-300 uppercase font-black tracking-wider">{item.label}</span>
+                              <item.icon size={24} className={item.color + " drop-shadow-lg"} />
                           </div>
-                          <span className={`text-4xl font-extrabold ${item.color} font-mono`}>
+                          <span className={`text-4xl sm:text-5xl lg:text-6xl font-black ${item.color} font-mono drop-shadow-lg`}>
                               {item.value}
                           </span>
                       </div>
@@ -648,8 +653,10 @@ const DartsApp = () => {
               </div>
               
               {stats.completedGamesCount === 0 && (
-                  <div className="text-center text-slate-500 py-12 mt-8 bg-slate-800 rounded-lg border border-slate-700">
-                      <p className="text-lg">Start completing matches to see your overall stats here!</p>
+                  <div className="text-center text-slate-400 py-16 mt-8 bg-gradient-to-br from-slate-800 to-slate-700 rounded-3xl border-2 border-slate-600 shadow-2xl">
+                      <Trophy size={64} className="mx-auto mb-6 text-slate-600" />
+                      <p className="text-xl sm:text-2xl font-bold">Start completing matches to see your stats!</p>
+                      <p className="text-sm sm:text-base mt-2">Finish Game 3 to complete your first match</p>
                   </div>
               )}
           </div>
@@ -657,71 +664,91 @@ const DartsApp = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white font-sans flex flex-col items-center p-2 sm:p-4">
+    <div className="min-h-screen text-white font-sans flex flex-col items-center p-0">
       
       {/* Header */}
-      <div className="w-full max-w-5xl mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-emerald-400 flex items-center gap-2">
-            <Hash /> Monday Night Average App
+      <div className="w-full bg-slate-900 border-b border-slate-700 px-4 py-3 mb-0">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <h1 className="text-xl sm:text-2xl font-bold text-cyan-400 flex items-center gap-2">
+            <Hash className="w-5 h-5 sm:w-6 sm:h-6" />
+            Monday Night Average App
           </h1>
-          <div className="bg-slate-800 px-4 py-1 rounded-full border border-slate-700 text-sm font-mono text-emerald-400">
+          <div className="bg-slate-800 px-4 py-1.5 rounded-full border border-slate-700">
             {isEditing ? (
-              <span className="text-amber-300">Editing Match {editingMatchId}</span>
+              <span className="text-cyan-400 text-xs sm:text-sm">Editing Match {editingMatchId}</span>
             ) : (
-              <span>Current: Match {matchCount}</span>
+              <span className="text-cyan-400 text-xs sm:text-sm">Current: Match {matchCount}</span>
             )}
           </div>
         </div>
+      </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 sm:gap-2 border-b border-slate-700">
+      {/* Tabs */}
+      <div className="w-full bg-slate-900 border-b border-slate-700 px-4">
+        <div className="max-w-7xl mx-auto flex gap-0">
           <button 
             onClick={() => setActiveTab('current')}
-            className={`px-3 sm:px-4 py-2 rounded-t-lg flex items-center gap-2 transition text-sm sm:text-base ${activeTab === 'current' ? 'bg-emerald-600 text-white font-bold' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+            className={`px-4 sm:px-6 py-3 flex items-center justify-center gap-2 transition-all text-sm sm:text-base font-semibold border-b-2 ${
+              activeTab === 'current' 
+                ? 'bg-emerald-600 text-white border-emerald-400' 
+                : 'text-slate-400 hover:text-white border-transparent hover:bg-slate-800'
+            }`}
           >
-            <Calculator size={16} /> {isEditing ? `Edit Match ${editingMatchId}` : 'Current'}
+            <Calculator size={18} /> 
+            <span>Current</span>
           </button>
           <button 
             onClick={() => setActiveTab('history')}
-            className={`px-3 sm:px-4 py-2 rounded-t-lg flex items-center gap-2 transition text-sm sm:text-base ${activeTab === 'history' ? 'bg-blue-600 text-white font-bold' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+            className={`px-4 sm:px-6 py-3 flex items-center justify-center gap-2 transition-all text-sm sm:text-base font-semibold border-b-2 ${
+              activeTab === 'history' 
+                ? 'bg-emerald-600 text-white border-emerald-400' 
+                : 'text-slate-400 hover:text-white border-transparent hover:bg-slate-800'
+            }`}
           >
-            <History size={16} /> History ({completedMatches.length})
+            <History size={18} /> 
+            <span>History ({completedMatches.length})</span>
           </button>
           <button 
             onClick={() => setActiveTab('overall')}
-            className={`px-3 sm:px-4 py-2 rounded-t-lg flex items-center gap-2 transition text-sm sm:text-base ${activeTab === 'overall' ? 'bg-yellow-600 text-white font-bold' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+            className={`px-4 sm:px-6 py-3 flex items-center justify-center gap-2 transition-all text-sm sm:text-base font-semibold border-b-2 ${
+              activeTab === 'overall' 
+                ? 'bg-emerald-600 text-white border-emerald-400' 
+                : 'text-slate-400 hover:text-white border-transparent hover:bg-slate-800'
+            }`}
           >
-            <Trophy size={16} /> Overall Stats
+            <Trophy size={18} /> 
+            <span>Overall Stats</span>
           </button>
         </div>
       </div>
 
+      <div className="w-full max-w-7xl px-4 py-6">
+
       {/* --- Tab Content: Current Match / Editing View --- */}
       {activeTab === 'current' && (
         <>
-          <div className="w-full max-w-5xl">
+          <div className="w-full mb-6">
             {renderTable(isEditing ? editingGameData : games, false)}
           </div>
 
-          <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Grand Totals Card */}
-            <div className="bg-slate-800 p-4 rounded-lg border border-slate-700 flex flex-col justify-center">
-              <h3 className="text-slate-400 uppercase text-xs font-bold mb-3 tracking-wider border-b border-slate-700 pb-2">
-                {isEditing ? `Match ${editingMatchId} Totals (Recalculated)` : `Match ${matchCount} Totals`}
+            <div className="bg-slate-800 p-4 sm:p-5 rounded-lg border border-slate-700 shadow-xl flex flex-col justify-center">
+              <h3 className="text-slate-300 uppercase text-xs sm:text-sm font-bold mb-3 tracking-wider">
+                {isEditing ? `MATCH ${editingMatchId} TOTALS` : `MATCH ${matchCount} TOTALS`}
               </h3>
               <div className="grid grid-cols-1 gap-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-300">Total Score:</span>
-                  <span className="text-2xl font-bold text-white">{isEditing ? editingTotals.score : currentTotals.score}</span>
+                  <span className="text-slate-400 text-sm">Total Score:</span>
+                  <span className="text-2xl sm:text-3xl font-bold text-white">{isEditing ? editingTotals.score : currentTotals.score}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-300">Total Darts:</span>
-                  <span className="text-2xl font-bold text-white">{isEditing ? editingTotals.darts : currentTotals.darts}</span>
+                  <span className="text-slate-400 text-sm">Total Darts:</span>
+                  <span className="text-2xl sm:text-3xl font-bold text-white">{isEditing ? editingTotals.darts : currentTotals.darts}</span>
                 </div>
-                <div className="flex justify-between items-center bg-emerald-900/30 p-2 rounded -mx-2">
-                  <span className="text-emerald-400 font-bold">1 Dart Avg:</span>
-                  <span className="text-3xl font-bold text-emerald-400">{isEditing ? editingTotals.avg : currentTotals.avg}</span>
+                <div className="flex justify-between items-center pt-3 border-t border-slate-700">
+                  <span className="text-emerald-400 font-bold text-sm">1 Dart Avg:</span>
+                  <span className="text-3xl sm:text-4xl font-bold text-emerald-400">{isEditing ? editingTotals.avg : currentTotals.avg}</span>
                 </div>
               </div>
             </div>
@@ -731,90 +758,86 @@ const DartsApp = () => {
               
               {isEditing ? (
                 // --- Editing Actions ---
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   <button 
                       onClick={saveEditedMatch}
-                      className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded shadow-md uppercase tracking-wider text-sm flex items-center justify-center gap-1 active:scale-95 transition"
+                      className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-4 sm:py-5 rounded-xl shadow-lg shadow-blue-500/30 uppercase tracking-wider text-sm sm:text-base flex items-center justify-center gap-2 active:scale-95 transition-all duration-200 touch-manipulation"
                   >
-                      <Save size={18} /> Save Changes
+                      <Save size={20} /> Save
                   </button>
                   <button 
                       onClick={cancelEdit}
-                      className="bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded shadow-md uppercase tracking-wider text-sm flex items-center justify-center gap-1 active:scale-95 transition"
+                      className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold py-4 sm:py-5 rounded-xl shadow-lg shadow-red-500/30 uppercase tracking-wider text-sm sm:text-base flex items-center justify-center gap-2 active:scale-95 transition-all duration-200 touch-manipulation"
                   >
-                      <Trash2 size={18} /> Cancel Edit
+                      <Trash2 size={20} /> Cancel
                   </button>
                 </div>
               ) : (
                 // --- Standard Play Actions ---
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
                   <button 
-                      onClick={handleSitOut} // Triggers the confirmation modal
+                      onClick={handleSitOut}
                       disabled={activeGameIdx > 2 || games[activeGameIdx]?.isSatOut}
-                      className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded shadow-md uppercase tracking-wider text-xs sm:text-sm flex items-center justify-center gap-1 active:scale-95 transition"
+                      className="bg-orange-600 hover:bg-orange-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 sm:py-4 rounded-lg shadow-lg uppercase tracking-wider text-xs sm:text-sm flex flex-col items-center justify-center gap-1 active:scale-95 transition-all duration-200 touch-manipulation"
                   >
-                      <UserMinus size={18} /> Sit Out
+                      <UserMinus size={18} /> <span>SIT OUT</span>
                   </button>
-                  {/* NEW Position: # End Score Button */}
                   <button 
                       onClick={() => handleEndScoreClick()}
                       disabled={activeGameIdx > 2 || games[activeGameIdx]?.isSatOut}
-                      className="bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded shadow-md uppercase tracking-wider text-xs sm:text-sm truncate flex items-center justify-center gap-1 active:scale-95 transition"
+                      className="bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 sm:py-4 rounded-lg shadow-lg uppercase tracking-wider text-xs sm:text-sm flex flex-col items-center justify-center gap-1 active:scale-95 transition-all duration-200 touch-manipulation"
                   >
-                      <Hash size={18} /> End Score
+                      <Hash size={18} /> <span>END SCORE</span>
                   </button>
-                  {/* Night Complete Button */}
                   <button 
                       onClick={handleNightComplete}
                       disabled={isEditing}
-                      className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded shadow-md uppercase tracking-wider text-xs sm:text-sm truncate flex items-center justify-center gap-1 active:scale-95 transition"
+                      className="bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 sm:py-4 rounded-lg shadow-lg uppercase tracking-wider text-xs sm:text-sm flex flex-col items-center justify-center gap-1 active:scale-95 transition-all duration-200 touch-manipulation"
                   >
-                      <LogOut size={18} /> Night Done
+                      <LogOut size={18} /> <span>NIGHT DONE</span>
                   </button>
                 </div>
               )}
 
 
               {/* Row 2: Input Actions (Shared) */}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <button 
                   onClick={handleUndo}
-                  className="bg-slate-600 hover:bg-slate-500 text-white font-bold py-3 rounded shadow-md uppercase tracking-wider text-sm flex items-center justify-center gap-1 active:scale-95 transition"
+                  className="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 sm:py-4 rounded-lg shadow-lg uppercase tracking-wider text-sm sm:text-base flex items-center justify-center gap-2 active:scale-95 transition-all duration-200 touch-manipulation"
                 >
-                  <Undo2 size={18} /> Undo
+                  <Undo2 size={20} /> UNDO
                 </button>
-                {/* OLD POSITION: End Score Button was here. Now Enter is here. */}
                 <button 
                   onClick={() => handleEndScoreClick()}
                   disabled={activeGameIdx > 2 || (isEditing ? editingGameData[activeGameIdx]?.isSatOut : games[activeGameIdx]?.isSatOut)}
-                  className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded shadow-md uppercase tracking-wider text-sm truncate flex items-center justify-center gap-1 active:scale-95 transition"
+                  className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 sm:py-4 rounded-lg shadow-lg uppercase tracking-wider text-sm sm:text-base flex items-center justify-center gap-2 active:scale-95 transition-all duration-200 touch-manipulation"
                 >
-                    <Hash size={18} /> End Score
+                    <Hash size={20} /> END SCORE
                 </button>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 h-48">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 min-h-[200px] sm:min-h-[240px]">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                   <button 
                     key={num} 
                     onClick={() => handleNumPress(num.toString())} 
                     disabled={activeGameIdx > 2 || (isEditing ? editingGameData[activeGameIdx]?.isSatOut : games[activeGameIdx]?.isSatOut)}
-                    className="bg-slate-700 hover:bg-slate-600 text-2xl font-bold rounded shadow active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-slate-700 hover:bg-slate-600 text-2xl sm:text-3xl font-bold rounded-lg shadow-lg active:scale-95 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed text-white touch-manipulation"
                   >
                     {num}
                   </button>
                 ))}
-                <button onClick={handleBackspace} className="bg-slate-700 hover:bg-slate-600 text-xl font-bold rounded shadow flex items-center justify-center active:scale-95 transition text-red-300"><ArrowLeft /></button>
+                <button onClick={handleBackspace} className="bg-slate-700 hover:bg-slate-600 text-xl font-bold rounded-lg shadow-lg flex items-center justify-center active:scale-95 transition-all duration-200 text-white touch-manipulation"><ArrowLeft size={24} /></button>
                 <button 
                   onClick={() => handleNumPress('0')} 
-                  className="bg-slate-700 hover:bg-slate-600 text-2xl font-bold rounded shadow active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed" 
+                  className="bg-slate-700 hover:bg-slate-600 text-2xl sm:text-3xl font-bold rounded-lg shadow-lg active:scale-95 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed text-white touch-manipulation" 
                   disabled={activeGameIdx > 2 || (isEditing ? editingGameData[activeGameIdx]?.isSatOut : games[activeGameIdx]?.isSatOut)}
                 >0</button>
-                {/* NEW POSITION: Enter Button is here. */}
                 <button 
                     onClick={handleEnter}
                     disabled={activeGameIdx > 2 || (isEditing ? editingGameData[activeGameIdx]?.isSatOut : games[activeGameIdx]?.isSatOut)}
-                    className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xl rounded shadow active:scale-95 transition"
+                    className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-base sm:text-lg rounded-lg shadow-lg active:scale-95 transition-all duration-200 touch-manipulation"
                 >
                   Enter
                 </button>
@@ -826,43 +849,45 @@ const DartsApp = () => {
 
       {/* --- Tab Content: History --- */}
       {activeTab === 'history' && (
-        <div className="w-full max-w-5xl flex flex-col gap-8 pb-10">
+        <div className="w-full max-w-7xl flex flex-col gap-8 pb-10">
           {completedMatches.length === 0 ? (
-            <div className="text-center text-slate-500 py-12 bg-slate-800 rounded-lg border border-slate-700">
-              <History size={48} className="mx-auto mb-4 opacity-50" />
-              <p className="text-lg">No matches completed yet.</p>
-              <p className="text-sm">Finish Game 3 of the current match to see it here.</p>
+            <div className="text-center text-slate-400 py-16 bg-gradient-to-br from-slate-800 to-slate-700 rounded-3xl border-2 border-slate-600 shadow-2xl">
+              <History size={64} className="mx-auto mb-6 text-slate-600 drop-shadow-lg" />
+              <p className="text-xl sm:text-2xl font-black mb-2">No matches completed yet</p>
+              <p className="text-sm sm:text-base text-slate-500">Finish Game 3 of the current match to see it here</p>
             </div>
           ) : (
             completedMatches.map((match) => (
-              <div key={match.matchId} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="flex justify-between items-center mb-2 px-1">
-                  <h2 className="text-lg font-bold text-blue-400 flex items-center gap-2">
-                    <Check className="text-blue-500" size={18} />
+              <div key={match.matchId} className="animate-fadeInUp">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 px-2">
+                  <h2 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 flex items-center gap-3">
+                    <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-2 rounded-xl">
+                      <Check className="text-white" size={24} />
+                    </div>
                     Match #{match.matchId} Summary
                   </h2>
                   <button 
                     onClick={() => startEditMatch(match)} 
-                    className="bg-slate-700 hover:bg-slate-600 text-xs text-white px-3 py-1 rounded-full flex items-center gap-1 transition active:scale-95"
+                    className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-sm sm:text-base text-white px-5 py-3 rounded-2xl flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-slate-700/50 touch-manipulation font-bold border-2 border-slate-600"
                   >
-                    <Edit size={14} /> Edit Scores
+                    <Edit size={18} className="drop-shadow-lg" /> Edit Scores
                   </button>
                 </div>
                 
                 {renderTable(match.games, true)}
                 
-                <div className="grid grid-cols-3 gap-4 text-center bg-slate-800 p-3 rounded border border-slate-700 text-sm">
-                  <div>
-                    <span className="block text-slate-400 text-xs uppercase">Total Score (Played)</span>
-                    <span className="text-xl font-bold text-white">{match.totals.score}</span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center bg-gradient-to-br from-slate-800 to-slate-700 p-5 sm:p-6 rounded-2xl border-2 border-slate-600 shadow-xl mt-4">
+                  <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+                    <span className="block text-slate-400 text-xs sm:text-sm uppercase font-black mb-2">Total Score (Played)</span>
+                    <span className="text-2xl sm:text-3xl font-black text-cyan-400 drop-shadow-lg">{match.totals.score}</span>
                   </div>
-                  <div>
-                    <span className="block text-slate-400 text-xs uppercase">Total Darts (Played)</span>
-                    <span className="text-xl font-bold text-white">{match.totals.darts}</span>
+                  <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+                    <span className="block text-slate-400 text-xs sm:text-sm uppercase font-black mb-2">Total Darts (Played)</span>
+                    <span className="text-2xl sm:text-3xl font-black text-blue-400 drop-shadow-lg">{match.totals.darts}</span>
                   </div>
-                  <div>
-                    <span className="block text-emerald-400 text-xs uppercase">1 Dart Avg (Played)</span>
-                    <span className="text-xl font-bold text-emerald-400">{match.totals.avg}</span>
+                  <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+                    <span className="block text-emerald-400 text-xs sm:text-sm uppercase font-black mb-2">1 Dart Avg (Played)</span>
+                    <span className="text-2xl sm:text-3xl font-black text-emerald-400 drop-shadow-lg">{match.totals.avg}</span>
                   </div>
                 </div>
               </div>
@@ -876,47 +901,47 @@ const DartsApp = () => {
 
       {/* Finish Confirmation Modal */}
       {showFinishModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-slate-800 p-6 rounded-xl max-w-lg w-full border border-slate-600 shadow-2xl animate-in fade-in zoom-in duration-200">
-            <h3 className="text-xl font-bold text-white mb-4 text-center">Set Game Finish Type</h3>
-            <p className="text-slate-300 mb-6 text-center text-sm">
-              Please select the outcome for Game #{finishTarget.gameIndex + 1}.
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 backdrop-blur-md">
+          <div className="bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 p-6 sm:p-8 lg:p-10 rounded-3xl max-w-2xl w-full border-2 border-slate-600 shadow-2xl animate-fadeInUp">
+            <h3 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 mb-4 text-center">Set Game Finish Type</h3>
+            <p className="text-slate-300 mb-8 text-center text-base sm:text-lg font-semibold">
+              Please select the outcome for <span className="text-emerald-400 font-black">Game #{finishTarget.gameIndex + 1}</span>
             </p>
             
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                {/* Game Lost (No Finish) - RED */}
-               <button onClick={() => finalizeGame('')} className="bg-red-600 hover:bg-red-500 py-4 rounded-lg font-bold text-white shadow-lg active:scale-95 transition flex flex-col items-center gap-1">
-                  <X size={24} />
+               <button onClick={() => finalizeGame('')} className="bg-gradient-to-br from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 py-6 rounded-2xl font-black text-white text-base sm:text-lg shadow-2xl shadow-red-500/30 active:scale-95 transition-all touch-manipulation flex flex-col items-center gap-3 border-2 border-red-500">
+                  <X size={32} className="drop-shadow-lg" />
                   <span>Game Lost</span>
                 </button>
                 
                 {/* Partner Finish - ORANGE */}
-                <button onClick={() => finalizeGame('P')} className="bg-orange-500 hover:bg-orange-400 py-4 rounded-lg font-bold text-white shadow-lg active:scale-95 transition flex flex-col items-center gap-1">
-                  <User size={24} />
+                <button onClick={() => finalizeGame('P')} className="bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 py-6 rounded-2xl font-black text-white text-base sm:text-lg shadow-2xl shadow-orange-500/30 active:scale-95 transition-all touch-manipulation flex flex-col items-center gap-3 border-2 border-orange-400">
+                  <User size={32} className="drop-shadow-lg" />
                   <span>Partner Finish</span>
                 </button>
 
                 {/* My Finish - GREEN */}
-                <button onClick={() => finalizeGame('M')} className="bg-emerald-600 hover:bg-emerald-500 py-4 rounded-lg font-bold text-white shadow-lg active:scale-95 transition flex flex-col items-center gap-1">
-                  <User2 size={24} />
+                <button onClick={() => finalizeGame('M')} className="bg-gradient-to-br from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 py-6 rounded-2xl font-black text-white text-base sm:text-lg shadow-2xl shadow-emerald-500/30 active:scale-95 transition-all touch-manipulation flex flex-col items-center gap-3 border-2 border-emerald-500">
+                  <User2 size={32} className="drop-shadow-lg" />
                   <span>My Finish</span>
                 </button>
             </div>
             
             {/* Conditional messaging */}
             {finishTarget.isEditing ? (
-                <p className="mt-4 text-center text-xs text-amber-300">
+                <p className="mt-6 text-center text-sm sm:text-base text-amber-300 font-bold bg-amber-900/20 p-4 rounded-xl border border-amber-500/30">
                     Your changes will be saved when you click the 'Save Changes' button on the main screen.
                 </p>
             ) : (activeGameIdx === 2 && (
-              <p className="mt-4 text-center text-xs text-blue-300 animate-pulse">
+              <p className="mt-6 text-center text-sm sm:text-base text-blue-300 font-bold bg-blue-900/20 p-4 rounded-xl border border-blue-500/30 animate-pulse">
                 Completing this game will finish Match #{matchCount} and start Match #{matchCount + 1}.
               </p>
             ))}
             
             <button 
               onClick={handleFinishModalClose} 
-              className="mt-4 text-center w-full text-sm text-slate-400 hover:text-white transition"
+              className="mt-6 text-center w-full text-base sm:text-lg font-bold text-slate-400 hover:text-white transition-colors py-3 rounded-xl hover:bg-slate-700/50 touch-manipulation"
             >
               Close
             </button>
@@ -926,24 +951,26 @@ const DartsApp = () => {
       
       {/* Sit Out Confirmation Modal */}
       {showSitOutConfirmModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-slate-800 p-6 rounded-xl max-w-lg w-full border border-slate-600 shadow-2xl animate-in fade-in zoom-in duration-200">
-            <div className="flex items-center gap-3 mb-4">
-              <AlertTriangle size={32} className="text-red-500 flex-shrink-0" />
-              <h3 className="text-2xl font-bold text-white">Confirm Sit Out</h3>
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 backdrop-blur-md">
+          <div className="bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 p-6 sm:p-8 lg:p-10 rounded-3xl max-w-2xl w-full border-2 border-slate-600 shadow-2xl animate-fadeInUp">
+            <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
+              <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-2xl shadow-xl">
+                <AlertTriangle size={40} className="text-white flex-shrink-0" />
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500 text-center sm:text-left">Confirm Sit Out</h3>
             </div>
             
-            <p className="text-slate-300 mb-6">
-              Are you sure you want to mark Match **{matchCount}** as **Sat Out**? 
-              <br/>
+            <p className="text-slate-300 mb-8 text-base sm:text-lg leading-relaxed">
+              Are you sure you want to mark <span className="text-amber-400 font-black">Match #{matchCount}</span> as <span className="text-amber-400 font-black">Sat Out</span>? 
+              <br/><br/>
               This action cannot be undone and the match will be permanently archived with all three games marked as 'S/O'.
             </p>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                {/* Cancel */}
                <button 
                  onClick={() => setShowSitOutConfirmModal(false)} 
-                 className="bg-slate-600 hover:bg-slate-500 py-3 rounded-lg font-bold text-white shadow-lg active:scale-95 transition flex items-center justify-center gap-1"
+                 className="bg-gradient-to-br from-slate-600 to-slate-700 hover:from-slate-500 hover:to-slate-600 py-5 sm:py-6 rounded-2xl font-black text-white text-base sm:text-lg shadow-2xl shadow-slate-500/30 active:scale-95 transition-all touch-manipulation flex items-center justify-center gap-2 border-2 border-slate-500"
                >
                   Cancel
                 </button>
@@ -951,9 +978,9 @@ const DartsApp = () => {
                 {/* Confirm */}
                 <button 
                   onClick={confirmSitOut} 
-                  className="bg-amber-600 hover:bg-amber-500 py-3 rounded-lg font-bold text-white shadow-lg active:scale-95 transition flex items-center justify-center gap-1"
+                  className="bg-gradient-to-br from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 py-5 sm:py-6 rounded-2xl font-black text-white text-base sm:text-lg shadow-2xl shadow-amber-500/30 active:scale-95 transition-all touch-manipulation flex items-center justify-center gap-2 border-2 border-amber-500"
                 >
-                  <Check size={20} /> Yes, I Sat Out
+                  <Check size={24} className="drop-shadow-lg" /> Yes, I Sat Out
                 </button>
             </div>
           </div>
@@ -962,24 +989,26 @@ const DartsApp = () => {
       
       {/* Night Complete Confirmation Modal (NEW) */}
       {showNightCompleteModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-slate-800 p-6 rounded-xl max-w-lg w-full border border-slate-600 shadow-2xl animate-in fade-in zoom-in duration-200">
-            <div className="flex items-center gap-3 mb-4">
-              <LogOut size={32} className="text-purple-400 flex-shrink-0" />
-              <h3 className="text-2xl font-bold text-white">End Night Confirmation</h3>
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 backdrop-blur-md">
+          <div className="bg-gradient-to-br from-slate-800 via-purple-900 to-slate-800 p-6 sm:p-8 lg:p-10 rounded-3xl max-w-2xl w-full border-2 border-purple-600 shadow-2xl animate-fadeInUp">
+            <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
+              <div className="bg-gradient-to-br from-purple-500 to-indigo-600 p-4 rounded-2xl shadow-xl">
+                <LogOut size={40} className="text-white flex-shrink-0" />
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400 text-center sm:text-left">End Night Confirmation</h3>
             </div>
             
-            <p className="text-slate-300 mb-6">
-              Are you sure you want to **Complete the Night**? 
+            <p className="text-slate-300 mb-8 text-base sm:text-lg leading-relaxed">
+              Are you sure you want to <span className="text-purple-400 font-black">Complete the Night</span>? 
               <br/><br/>
-              This will **erase the current match data** and reset the counter to Match #1 for a fresh start, but your **History and Overall Stats will be preserved**.
+              This will <span className="text-red-400 font-black">erase the current match data</span> and reset the counter to Match #1 for a fresh start, but your <span className="text-emerald-400 font-black">History and Overall Stats will be preserved</span>.
             </p>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                {/* Cancel */}
                <button 
                  onClick={() => setShowNightCompleteModal(false)} 
-                 className="bg-slate-600 hover:bg-slate-500 py-3 rounded-lg font-bold text-white shadow-lg active:scale-95 transition flex items-center justify-center gap-1"
+                 className="bg-gradient-to-br from-slate-600 to-slate-700 hover:from-slate-500 hover:to-slate-600 py-5 sm:py-6 rounded-2xl font-black text-white text-base sm:text-lg shadow-2xl shadow-slate-500/30 active:scale-95 transition-all touch-manipulation flex items-center justify-center gap-2 border-2 border-slate-500"
                >
                   Cancel
                 </button>
@@ -987,15 +1016,15 @@ const DartsApp = () => {
                 {/* Confirm */}
                 <button 
                   onClick={confirmNightComplete} 
-                  className="bg-purple-600 hover:bg-purple-500 py-3 rounded-lg font-bold text-white shadow-lg active:scale-95 transition flex items-center justify-center gap-1"
+                  className="bg-gradient-to-br from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 py-5 sm:py-6 rounded-2xl font-black text-white text-base sm:text-lg shadow-2xl shadow-purple-500/30 active:scale-95 transition-all touch-manipulation flex items-center justify-center gap-2 border-2 border-purple-500"
                 >
-                  <Check size={20} /> Yes, Start Fresh Night
+                  <Check size={24} className="drop-shadow-lg" /> Yes, Start Fresh Night
                 </button>
             </div>
           </div>
         </div>
       )}
-
+      </div>
     </div>
   );
 };
