@@ -70,6 +70,9 @@ class DartScoreTracker {
                 <button class="finish-btn" id="signupBtn" style="width: 100%; background: #2563eb;">
                     Create New Account
                 </button>
+                <button class="finish-btn" id="resendVerificationBtn" style="width: 100%; background: #f59e0b; margin-top: 10px; font-size: 13px;">
+                    📧 Resend Verification Email
+                </button>
                 <div id="authMessage" style="color: #ef4444; margin-top: 10px; font-size: 14px; text-align: center;"></div>
             </div>
         `;
@@ -113,21 +116,54 @@ class DartScoreTracker {
                 messageDiv.textContent = error.message;
                 messageDiv.style.color = '#ef4444';
             } else {
-                this.currentUser = data.user;
-                const metadata = data.user.user_metadata || {};
-                this.userName = metadata.first_name && metadata.last_name 
-                    ? `${metadata.first_name} ${metadata.last_name}`
-                    : data.user.email.split('@')[0];
-                this.sessionDate = new Date().toISOString().split('T')[0];
-                this.sessionId = this.getSessionId();
-                document.body.removeChild(modal);
-                await this.initializeApp();
+                // Check if email is verified
+                if (data.user.email_confirmed_at) {
+                    this.currentUser = data.user;
+                    const metadata = data.user.user_metadata || {};
+                    this.userName = metadata.first_name && metadata.last_name 
+                        ? `${metadata.first_name} ${metadata.last_name}`
+                        : data.user.email.split('@')[0];
+                    this.sessionDate = new Date().toISOString().split('T')[0];
+                    this.sessionId = this.getSessionId();
+                    document.body.removeChild(modal);
+                    await this.initializeApp();
+                } else {
+                    messageDiv.textContent = 'Please verify your email address before logging in. Check your inbox for the verification link.';
+                    messageDiv.style.color = '#f59e0b';
+                    await supabase.auth.signOut();
+                }
             }
         });
         
         document.getElementById('signupBtn').addEventListener('click', () => {
             document.body.removeChild(modal);
             this.showSignupForm();
+        });
+        
+        document.getElementById('resendVerificationBtn').addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            
+            if (!email) {
+                messageDiv.textContent = 'Please enter your email address';
+                messageDiv.style.color = '#ef4444';
+                return;
+            }
+            
+            messageDiv.textContent = 'Sending verification email...';
+            messageDiv.style.color = '#9ca3af';
+            
+            const { error } = await supabase.auth.resend({
+                type: 'signup',
+                email: email
+            });
+            
+            if (error) {
+                messageDiv.textContent = error.message;
+                messageDiv.style.color = '#ef4444';
+            } else {
+                messageDiv.textContent = '✅ Verification email sent! Check your inbox.';
+                messageDiv.style.color = '#16a34a';
+            }
         });
     }
 
@@ -228,18 +264,31 @@ class DartScoreTracker {
                 messageDiv.textContent = error.message;
                 messageDiv.style.color = '#ef4444';
             } else {
-                messageDiv.textContent = 'Account created! Logging you in...';
-                messageDiv.style.color = '#16a34a';
-                
-                // Auto-login after signup
-                setTimeout(async () => {
-                    this.currentUser = data.user;
-                    this.userName = `${firstName} ${lastName}`;
-                    this.sessionDate = new Date().toISOString().split('T')[0];
-                    this.sessionId = this.getSessionId();
-                    document.body.removeChild(modal);
-                    await this.initializeApp();
-                }, 1000);
+                // Check if email confirmation is required
+                const identities = data.user?.identities || [];
+                if (identities.length === 0) {
+                    // Email confirmation required
+                    messageDiv.innerHTML = '✅ Account created!<br>Please check your email to verify your account before logging in.';
+                    messageDiv.style.color = '#16a34a';
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(modal);
+                        this.showAuthScreen();
+                    }, 4000);
+                } else {
+                    // No email confirmation required (instant login)
+                    messageDiv.textContent = 'Account created! Logging you in...';
+                    messageDiv.style.color = '#16a34a';
+                    
+                    setTimeout(async () => {
+                        this.currentUser = data.user;
+                        this.userName = `${firstName} ${lastName}`;
+                        this.sessionDate = new Date().toISOString().split('T')[0];
+                        this.sessionId = this.getSessionId();
+                        document.body.removeChild(modal);
+                        await this.initializeApp();
+                    }, 1000);
+                }
             }
         });
         
