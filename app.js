@@ -825,13 +825,17 @@ class DartScoreTracker {
     nightDone() {
         const isLastMatch = this.currentMatch === 5;
         
-        // Check if current match has at least one game completed
-        const hasAnyGameData = Object.values(this.gameData).some(game => 
-            game.scores && game.scores.length > 0
-        );
+        // Check if all 3 games have end markers (/) - confirms match is complete
+        let gamesCompleted = 0;
+        for (let game = 1; game <= 3; game++) {
+            const hasEndMarker = document.querySelector(`.dart-cell[data-game="${game}"].end-marker`);
+            if (hasEndMarker) {
+                gamesCompleted++;
+            }
+        }
         
-        if (!hasAnyGameData) {
-            alert('Please complete at least one game before proceeding.');
+        if (gamesCompleted < 3) {
+            alert(`Please complete all 3 games before proceeding. (${gamesCompleted}/3 games have an end score /)`);
             return;
         }
         
