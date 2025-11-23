@@ -12,6 +12,7 @@ DROP POLICY IF EXISTS "Users can insert their own match history" ON match_histor
 DROP POLICY IF EXISTS "Users can update their own match history" ON match_history;
 DROP POLICY IF EXISTS "Users can view their own match history" ON match_history;
 DROP POLICY IF EXISTS "Users can delete their own match history" ON match_history;
+DROP POLICY IF EXISTS "Users can view all match history for leaderboard" ON match_history;
 
 -- Policies for dart_sessions table
 CREATE POLICY "Users can insert their own sessions"
