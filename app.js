@@ -85,6 +85,12 @@ class DartScoreTracker {
             });
         });
 
+        // Clear All Stats button
+        const clearAllBtn = document.getElementById('clearAllStatsBtn');
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', () => this.clearAllStats());
+        }
+
         // Highlight current cell
         this.highlightCurrentCell();
     }
@@ -1241,6 +1247,24 @@ class DartScoreTracker {
         this.switchTab('current');
 
         alert('Ready for a new night! All previous data has been cleared.');
+    }
+
+    async clearAllStats() {
+        // Confirm before clearing
+        const confirmed = confirm('⚠️ WARNING: This will delete ALL matches, statistics, and history data. This cannot be undone!\n\nAre you sure you want to clear everything and start fresh?');
+        
+        if (!confirmed) {
+            return;
+        }
+
+        // Double confirmation for safety
+        const doubleConfirm = confirm('Are you ABSOLUTELY sure? All your scoring data will be permanently deleted.');
+        
+        if (!doubleConfirm) {
+            return;
+        }
+
+        await this.resetForNewNight();
     }
 }
 

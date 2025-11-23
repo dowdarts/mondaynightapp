@@ -65,6 +65,33 @@ h1 {
     transform: translateY(0);
 }
 
+.clear-stats-button {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 20px auto;
+    display: block;
+    box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3);
+    transition: all 0.3s;
+    width: 90%;
+    max-width: 400px;
+}
+
+.clear-stats-button:hover {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(220, 38, 38, 0.4);
+}
+
+.clear-stats-button:active {
+    transform: translateY(0);
+}
+
 .tabs {
     display: flex;
     gap: 5px;
