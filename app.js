@@ -500,16 +500,6 @@ class DartScoreTracker {
             });
         };
 
-        // Add click handlers
-        buttons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const result = e.target.dataset.result;
-                this.handleFinishResult(result);
-                document.body.removeChild(modal);
-                document.removeEventListener('keydown', keyHandler);
-            });
-        });
-
         // Keyboard handler
         const keyHandler = (e) => {
             if (e.key === '1') {
@@ -534,6 +524,16 @@ class DartScoreTracker {
         };
 
         document.addEventListener('keydown', keyHandler);
+        
+        // Add click handlers
+        buttons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const result = e.target.dataset.result || e.target.closest('.finish-btn').dataset.result;
+                this.handleFinishResult(result);
+                document.body.removeChild(modal);
+                document.removeEventListener('keydown', keyHandler);
+            });
+        });
     }
 
     handleFinishResult(result) {
