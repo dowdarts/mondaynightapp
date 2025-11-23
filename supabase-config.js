@@ -151,6 +151,41 @@ const SupabaseDB = {
         return { data, error };
     },
 
+    // Get all session dates for the current user
+    async getUserSessionDates(userId) {
+        if (!supabase) return { error: 'Supabase not initialized' };
+        
+        try {
+            // Get distinct session dates from match_history for this user
+            const { data, error } = await supabase
+                .from('match_history')
+                .select('session_id')
+                .like('session_id', `${userId}_%`)
+                .order('created_at', { ascending: false });
+            
+            if (error) return { data: null, error };
+            
+            // Extract unique dates from session IDs (format: userId_YYYY-MM-DD)
+            const uniqueDates = [...new Set(data.map(record => {
+                const parts = record.session_id.split('_');
+                return parts.length > 1 ? parts[1] : null;
+            }))].filter(date => date !== null);
+            
+            return { data: uniqueDates, error: null };
+        } catch (error) {
+            console.error('Error fetching session dates:', error);
+            return { data: null, error };
+        }
+    },
+
+    // Load match history for a specific session date
+    async loadMatchHistoryByDate(userId, sessionDate) {
+        if (!supabase) return { error: 'Supabase not initialized' };
+        
+        const sessionId = `${userId}_${sessionDate}`;
+        return await this.loadMatchHistory(sessionId);
+    },
+
     // Get Year to Date leaderboard from nightly_stats
     // This aggregates all saved nights (not individual matches) for YTD totals
     async getYTDLeaderboard() {

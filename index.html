@@ -169,6 +169,12 @@
 
         <div id="historyTab" class="tab-content">
             <h2>Match History</h2>
+            <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                <label for="sessionDateSelect" style="color: #9ca3af; font-size: 14px;">View Session:</label>
+                <select id="sessionDateSelect" style="background: #1e293b; color: #f3f4f6; border: 1px solid #374151; border-radius: 8px; padding: 8px 12px; font-size: 14px; min-width: 200px;">
+                    <option value="current">Current Session</option>
+                </select>
+            </div>
             <div id="historyContent" class="history-list">
                 <p class="empty-message">No matches completed yet. Complete a match to see it here.</p>
             </div>

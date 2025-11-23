@@ -371,6 +371,12 @@ class DartScoreTracker {
             clearAllBtn.addEventListener('click', () => this.clearAllStats());
         }
 
+        // Session date selector
+        const sessionDateSelect = document.getElementById('sessionDateSelect');
+        if (sessionDateSelect) {
+            sessionDateSelect.addEventListener('change', (e) => this.loadSessionByDate(e.target.value));
+        }
+
         // Highlight current cell
         this.highlightCurrentCell();
     }
@@ -1015,6 +1021,7 @@ class DartScoreTracker {
         } else if (tabName === 'history') {
             document.getElementById('historyTab').classList.add('active');
             document.querySelector('[data-tab="history"]').classList.add('active');
+            this.populateSessionDateDropdown();
             this.updateHistoryView();
         } else if (tabName === 'stats') {
             document.getElementById('statsTab').classList.add('active');
@@ -1100,6 +1107,94 @@ class DartScoreTracker {
         ytdContent.innerHTML = html;
     }
 
+    async populateSessionDateDropdown() {
+        if (!supabase || !this.currentUser) return;
+        
+        const { data: dates, error } = await SupabaseDB.getUserSessionDates(this.currentUser.id);
+        
+        if (error || !dates || dates.length === 0) return;
+        
+        const select = document.getElementById('sessionDateSelect');
+        if (!select) return;
+        
+        // Clear existing options except "Current Session"
+        select.innerHTML = '<option value="current">Current Session</option>';
+        
+        // Add past session dates
+        dates.forEach(date => {
+            if (date !== this.sessionDate) { // Don't duplicate current session
+                const dateObj = new Date(date);
+                const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                });
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = formattedDate;
+                select.appendChild(option);
+            }
+        });
+    }
+
+    async loadSessionByDate(dateValue) {
+        if (dateValue === 'current') {
+            // Show current session matches
+            this.updateHistoryView();
+        } else {
+            // Load historical session matches
+            const { data: matches, error } = await SupabaseDB.loadMatchHistoryByDate(this.currentUser.id, dateValue);
+            
+            if (error) {
+                console.error('Error loading historical matches:', error);
+                return;
+            }
+            
+            // Display historical matches (read-only)
+            this.displayHistoricalMatches(matches || [], dateValue);
+        }
+    }
+
+    displayHistoricalMatches(matches, sessionDate) {
+        const historyContent = document.getElementById('historyContent');
+        
+        if (matches.length === 0) {
+            historyContent.innerHTML = '<p class="empty-message">No matches found for this session.</p>';
+            return;
+        }
+
+        const dateObj = new Date(sessionDate);
+        const formattedDate = dateObj.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            month: 'long', 
+            day: 'numeric', 
+            year: 'numeric' 
+        });
+
+        let html = `<div style="background: #1e293b; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; color: #9ca3af;">
+            <strong>📅 Viewing Past Session:</strong> ${formattedDate}
+        </div>`;
+        
+        matches.forEach((match) => {
+            if (match.status === 'sit-out') {
+                html += `
+                    <div class="history-match-container sit-out">
+                        <div class="history-match-header">
+                            <h3>Match ${match.match}</h3>
+                            <span class="status-badge sit-out">SIT OUT</span>
+                        </div>
+                        <p style="text-align: center; color: #9ca3af; padding: 20px;">You sat out this match</p>
+                    </div>
+                `;
+            } else {
+                html += this.generateMatchTableHTML(match, -1, true); // -1 index = no edit buttons
+            }
+        });
+
+        historyContent.innerHTML = html;
+    }
+
     updateHistoryView() {
         const historyContent = document.getElementById('historyContent');
         
@@ -1148,7 +1243,7 @@ class DartScoreTracker {
         });
     }
 
-    generateMatchTableHTML(match, matchIndex) {
+    generateMatchTableHTML(match, matchIndex, readOnly = false) {
         const myFinishes = match.myFinishes || 0;
         
         let tableRows = '';
@@ -1206,13 +1301,17 @@ class DartScoreTracker {
             `;
         }
         
+        const editButtons = !readOnly ? `
+                        <button class="edit-match-btn" data-match-index="${matchIndex}">✏️ Edit</button>
+                        <button class="delete-match-btn" data-match-index="${matchIndex}">🗑️ Delete</button>
+        ` : '';
+
         return `
             <div class="history-match-container" data-match-index="${matchIndex}">
                 <div class="history-match-header">
                     <h3>Match ${match.match}</h3>
                     <div class="history-header-buttons">
-                        <button class="edit-match-btn" data-match-index="${matchIndex}">✏️ Edit</button>
-                        <button class="delete-match-btn" data-match-index="${matchIndex}">🗑️ Delete</button>
+                        ${editButtons}
                     </div>
                 </div>
                 <div class="scoring-table">
@@ -1680,6 +1779,9 @@ class DartScoreTracker {
             }
 
             console.log('Data loaded from Supabase');
+            
+            // Populate session date dropdown for history viewing
+            this.populateSessionDateDropdown();
         } catch (error) {
             console.error('Error loading from database:', error);
         }
