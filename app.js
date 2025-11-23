@@ -462,12 +462,50 @@ class DartScoreTracker {
 
     nightDone() {
         const isLastMatch = this.currentMatch === 5;
-        const confirmMsg = isLastMatch 
-            ? 'Are you sure you want to end the night? This will save Match 5 and show nightly totals.'
-            : 'Are you sure you want to finish this match and move to the next one?';
         
-        if (!confirm(confirmMsg)) return;
+        // Show custom confirmation modal
+        this.showNextMatchConfirmation(isLastMatch);
+    }
 
+    showNextMatchConfirmation(isLastMatch) {
+        const modal = document.createElement('div');
+        modal.className = 'finish-modal';
+        
+        const title = isLastMatch ? 'End the Night?' : 'Move to Next Match?';
+        const message = isLastMatch 
+            ? 'This will save Match 5 and show your nightly totals.'
+            : `This will save Match ${this.currentMatch} and start Match ${this.currentMatch + 1}.`;
+        
+        modal.innerHTML = `
+            <div class="finish-modal-content">
+                <h2>${title}</h2>
+                <p style="color: #9ca3af; margin-bottom: 30px; font-size: 16px;">${message}</p>
+                <div class="finish-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <button class="finish-btn" id="cancelNextMatchBtn" style="background: #64748b;">
+                        Cancel
+                    </button>
+                    <button class="finish-btn win" id="confirmNextMatchBtn">
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Cancel button
+        document.getElementById('cancelNextMatchBtn').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+        
+        // Confirm button
+        document.getElementById('confirmNextMatchBtn').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            this.proceedToNextMatch(isLastMatch);
+        });
+    }
+
+    proceedToNextMatch(isLastMatch) {
         this.matchComplete = true;
         this.calculateMatchTotals();
         this.clearHighlight();
@@ -510,7 +548,7 @@ class DartScoreTracker {
         this.currentMatch++;
         
         if (this.currentMatch > 5) {
-            alert('All 5 matches completed for the night!');
+            this.showNightlyTotals();
             return;
         }
         
@@ -1116,11 +1154,42 @@ class DartScoreTracker {
             document.body.removeChild(modal);
         });
 
-        document.getElementById('allDoneBtn').addEventListener('click', async () => {
-            if (confirm('Are you sure you want to end the night? This will clear all data and start fresh for the next night.')) {
-                await this.resetForNewNight();
-                document.body.removeChild(modal);
-            }
+        document.getElementById('allDoneBtn').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            this.showResetConfirmation();
+        });
+    }
+
+    showResetConfirmation() {
+        const modal = document.createElement('div');
+        modal.className = 'finish-modal';
+        
+        modal.innerHTML = `
+            <div class="finish-modal-content">
+                <h2>⚠️ End Night & Reset?</h2>
+                <p style="color: #9ca3af; margin-bottom: 30px; font-size: 16px;">This will clear all data and start fresh for the next night. Your current stats will be lost.</p>
+                <div class="finish-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <button class="finish-btn" id="cancelResetBtn" style="background: #64748b;">
+                        Cancel
+                    </button>
+                    <button class="finish-btn loss" id="confirmResetBtn">
+                        Reset Everything
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Cancel button
+        document.getElementById('cancelResetBtn').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+        
+        // Confirm button
+        document.getElementById('confirmResetBtn').addEventListener('click', async () => {
+            document.body.removeChild(modal);
+            await this.resetForNewNight();
         });
     }
 
@@ -1315,7 +1384,29 @@ class DartScoreTracker {
         // Switch to current tab
         this.switchTab('current');
 
-        alert('Ready for a new night! All previous data has been cleared.');
+        // Show success message
+        this.showSuccessMessage('Ready for a new night! All previous data has been cleared.');
+    }
+
+    showSuccessMessage(message) {
+        const modal = document.createElement('div');
+        modal.className = 'finish-modal';
+        
+        modal.innerHTML = `
+            <div class="finish-modal-content">
+                <h2>✅ Success</h2>
+                <p style="color: #4ade80; margin-bottom: 30px; font-size: 16px;">${message}</p>
+                <button class="finish-btn win" id="okBtn">
+                    OK
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        document.getElementById('okBtn').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
     }
 
     showEditSitOutModal(matchIndex) {
@@ -1376,42 +1467,82 @@ class DartScoreTracker {
         });
     }
 
-    async deleteMatch(matchIndex) {
+    deleteMatch(matchIndex) {
         const match = this.matchHistory[matchIndex];
         if (!match) return;
         
-        const confirmed = confirm(`Delete Match ${match.match}?\n\nThis will permanently remove this match from your history. This cannot be undone.`);
+        // Show custom delete confirmation modal
+        const modal = document.createElement('div');
+        modal.className = 'finish-modal';
         
-        if (!confirmed) return;
+        modal.innerHTML = `
+            <div class="finish-modal-content">
+                <h2>Delete Match ${match.match}?</h2>
+                <p style="color: #9ca3af; margin-bottom: 30px; font-size: 16px;">This will permanently remove this match from your history. This cannot be undone.</p>
+                <div class="finish-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <button class="finish-btn" id="cancelDeleteBtn" style="background: #64748b;">
+                        Cancel
+                    </button>
+                    <button class="finish-btn loss" id="confirmDeleteBtn">
+                        Delete Match
+                    </button>
+                </div>
+            </div>
+        `;
         
-        // Remove from history array
-        this.matchHistory.splice(matchIndex, 1);
+        document.body.appendChild(modal);
         
-        // Save to database
-        await this.saveToDatabase();
+        document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
         
-        // Update views
-        this.updateHistoryView();
-        this.updateOverallStats();
-        document.getElementById('historyCount').textContent = this.matchHistory.length;
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+            document.body.removeChild(modal);
+            
+            // Remove from history array
+            this.matchHistory.splice(matchIndex, 1);
+            
+            // Save to database
+            await this.saveToDatabase();
+            
+            // Update views
+            this.updateHistoryView();
+            this.updateOverallStats();
+            document.getElementById('historyCount').textContent = this.matchHistory.length;
+        });
     }
 
-    async clearAllStats() {
-        // Confirm before clearing
-        const confirmed = confirm('⚠️ WARNING: This will delete ALL matches, statistics, and history data. This cannot be undone!\n\nAre you sure you want to clear everything and start fresh?');
+    clearAllStats() {
+        // Show custom clear all confirmation modal
+        const modal = document.createElement('div');
+        modal.className = 'finish-modal';
         
-        if (!confirmed) {
-            return;
-        }
-
-        // Double confirmation for safety
-        const doubleConfirm = confirm('Are you ABSOLUTELY sure? All your scoring data will be permanently deleted.');
+        modal.innerHTML = `
+            <div class="finish-modal-content">
+                <h2>⚠️ Clear All Stats?</h2>
+                <p style="color: #ef4444; margin-bottom: 20px; font-size: 16px; font-weight: 600;">WARNING: This will delete ALL matches, statistics, and history data!</p>
+                <p style="color: #9ca3af; margin-bottom: 30px; font-size: 14px;">This action cannot be undone. All your scoring data will be permanently deleted.</p>
+                <div class="finish-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <button class="finish-btn" id="cancelClearBtn" style="background: #64748b;">
+                        Cancel
+                    </button>
+                    <button class="finish-btn loss" id="confirmClearBtn">
+                        Delete Everything
+                    </button>
+                </div>
+            </div>
+        `;
         
-        if (!doubleConfirm) {
-            return;
-        }
-
-        await this.resetForNewNight();
+        document.body.appendChild(modal);
+        
+        document.getElementById('cancelClearBtn').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+        
+        document.getElementById('confirmClearBtn').addEventListener('click', async () => {
+            document.body.removeChild(modal);
+            await this.resetForNewNight();
+        });
     }
 }
 
