@@ -945,15 +945,17 @@ class DartScoreTracker {
         input.setAttribute('type', 'text');
         input.className = 'cell-edit-input';
         input.value = '';
-        input.placeholder = currentValue || '0';
+        input.placeholder = '';
         input.setAttribute('inputmode', 'numeric');
         input.setAttribute('pattern', '[0-9]*');
+        input.setAttribute('autocomplete', 'off');
         
         // Replace cell content with input
         cell.classList.add('editing-input');
-        cell.textContent = '';
+        cell.innerHTML = '';
         cell.appendChild(input);
         input.focus();
+        input.select();
         
         // Filter input to numbers only
         input.addEventListener('input', (e) => {
