@@ -30,6 +30,11 @@
             <h1># Monday Night Average App</h1>
             <div class="current-match">Current: Match 1</div>
         </header>
+        
+        <!-- Install App Button -->
+        <button id="installButton" class="install-button" hidden>
+            📱 Install App
+        </button>
 
         <div class="tabs">
             <button class="tab active" data-tab="current">📋 Current</button>
@@ -229,6 +234,40 @@
                     });
             });
         }
+        
+        // PWA Install Button
+        let deferredPrompt;
+        const installButton = document.getElementById('installButton');
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            // Show the install button
+            installButton.hidden = false;
+        });
+        
+        installButton.addEventListener('click', async () => {
+            if (!deferredPrompt) {
+                return;
+            }
+            // Show the install prompt
+            deferredPrompt.prompt();
+            // Wait for the user to respond to the prompt
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            // Clear the deferredPrompt for next time
+            deferredPrompt = null;
+            // Hide the install button
+            installButton.hidden = true;
+        });
+        
+        // Hide button if app is already installed
+        window.addEventListener('appinstalled', () => {
+            installButton.hidden = true;
+            console.log('PWA: App installed successfully');
+        });
     </script>
 </body>
 </html>

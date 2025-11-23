@@ -40,6 +40,31 @@ h1 {
     font-size: 13px;
 }
 
+.install-button {
+    background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 10px auto;
+    display: block;
+    box-shadow: 0 4px 6px rgba(22, 163, 74, 0.3);
+    transition: all 0.3s;
+}
+
+.install-button:hover {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(22, 163, 74, 0.4);
+}
+
+.install-button:active {
+    transform: translateY(0);
+}
+
 .tabs {
     display: flex;
     gap: 5px;
