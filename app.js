@@ -21,53 +21,56 @@ class DartScoreTracker {
     }
 
     showWelcomeScreen() {
-        const modal = document.createElement('div');
-        modal.className = 'finish-modal';
-        modal.id = 'welcomeModal';
-        
-        modal.innerHTML = `
-            <div class="finish-modal-content">
-                <h2>Welcome to Monday Night Darts</h2>
-                <p style="color: #9ca3af; margin-bottom: 20px;">Enter your name to get started</p>
-                <div style="margin-bottom: 20px;">
-                    <input type="text" id="userNameInput" class="edit-score-input" 
-                           placeholder="Enter your name" 
-                           style="width: 100%; padding: 12px; font-size: 16px; text-align: center;">
+        // Ensure DOM is ready before showing modal
+        setTimeout(() => {
+            const modal = document.createElement('div');
+            modal.className = 'finish-modal';
+            modal.id = 'welcomeModal';
+            
+            modal.innerHTML = `
+                <div class="finish-modal-content">
+                    <h2>Welcome to Monday Night Darts</h2>
+                    <p style="color: #9ca3af; margin-bottom: 20px;">Enter your name to get started</p>
+                    <div style="margin-bottom: 20px;">
+                        <input type="text" id="userNameInput" class="edit-score-input" 
+                               placeholder="Enter your name" 
+                               style="width: 100%; padding: 12px; font-size: 16px; text-align: center;">
+                    </div>
+                    <button class="finish-btn" id="startSessionBtn" style="width: 100%; background: #16a34a;">
+                        Start Session
+                    </button>
                 </div>
-                <button class="finish-btn" id="startSessionBtn" style="width: 100%; background: #16a34a;">
-                    Start Session
-                </button>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        const nameInput = document.getElementById('userNameInput');
-        nameInput.focus();
-        
-        // Allow Enter key to submit
-        nameInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('startSessionBtn').click();
-            }
-        });
-        
-        document.getElementById('startSessionBtn').addEventListener('click', async () => {
-            const name = nameInput.value.trim();
-            if (!name) {
-                alert('Please enter your name');
-                return;
-            }
+            `;
             
-            this.userName = name;
-            this.sessionDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-            this.sessionId = this.getSessionId();
+            document.body.appendChild(modal);
             
-            document.body.removeChild(modal);
+            const nameInput = document.getElementById('userNameInput');
+            nameInput.focus();
             
-            // Initialize Supabase and load saved data
-            await this.initializeApp();
-        });
+            // Allow Enter key to submit
+            nameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('startSessionBtn').click();
+                }
+            });
+            
+            document.getElementById('startSessionBtn').addEventListener('click', async () => {
+                const name = nameInput.value.trim();
+                if (!name) {
+                    alert('Please enter your name');
+                    return;
+                }
+                
+                this.userName = name;
+                this.sessionDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+                this.sessionId = this.getSessionId();
+                
+                document.body.removeChild(modal);
+                
+                // Initialize Supabase and load saved data
+                await this.initializeApp();
+            });
+        }, 0);
     }
 
     getSessionId() {
