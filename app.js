@@ -1165,9 +1165,9 @@ class DartScoreTracker {
                         </div>
                     </div>
                     <div class="totals-section">
-                        <h3>Games Won</h3>
+                        <h3>Games Finished</h3>
                         <div class="totals-row highlight">
-                            <span>Total Games I Won:</span>
+                            <span>Total Games I Finished:</span>
                             <span class="totals-value green">${totalMyFinishes}</span>
                         </div>
                     </div>
