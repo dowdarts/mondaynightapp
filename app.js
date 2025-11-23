@@ -34,7 +34,10 @@ class DartScoreTracker {
             
             if (session) {
                 this.currentUser = session.user;
-                this.userName = session.user.email.split('@')[0];
+                const metadata = session.user.user_metadata || {};
+                this.userName = metadata.first_name && metadata.last_name 
+                    ? `${metadata.first_name} ${metadata.last_name}`
+                    : session.user.email.split('@')[0];
                 this.sessionDate = new Date().toISOString().split('T')[0];
                 this.sessionId = this.getSessionId();
                 await this.initializeApp();
@@ -111,7 +114,10 @@ class DartScoreTracker {
                 messageDiv.style.color = '#ef4444';
             } else {
                 this.currentUser = data.user;
-                this.userName = data.user.email.split('@')[0];
+                const metadata = data.user.user_metadata || {};
+                this.userName = metadata.first_name && metadata.last_name 
+                    ? `${metadata.first_name} ${metadata.last_name}`
+                    : data.user.email.split('@')[0];
                 this.sessionDate = new Date().toISOString().split('T')[0];
                 this.sessionId = this.getSessionId();
                 document.body.removeChild(modal);
@@ -119,12 +125,82 @@ class DartScoreTracker {
             }
         });
         
-        document.getElementById('signupBtn').addEventListener('click', async () => {
+        document.getElementById('signupBtn').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            this.showSignupForm();
+        });
+    }
+
+    showSignupForm() {
+        const modal = document.createElement('div');
+        modal.className = 'finish-modal';
+        modal.id = 'signupModal';
+        
+        modal.innerHTML = `
+            <div class="finish-modal-content">
+                <h2>🎯 Create Account</h2>
+                <p style="color: #9ca3af; margin-bottom: 20px;">Join Monday Night Darts</p>
+                <div style="margin-bottom: 15px;">
+                    <input type="text" id="signupFirstName" class="edit-score-input" 
+                           placeholder="First Name" 
+                           style="width: 100%; padding: 12px; font-size: 16px; margin-bottom: 10px;">
+                    <input type="text" id="signupLastName" class="edit-score-input" 
+                           placeholder="Last Name" 
+                           style="width: 100%; padding: 12px; font-size: 16px; margin-bottom: 10px;">
+                    <input type="email" id="signupEmail" class="edit-score-input" 
+                           placeholder="Email" 
+                           style="width: 100%; padding: 12px; font-size: 16px; margin-bottom: 10px;">
+                    <input type="password" id="signupPassword" class="edit-score-input" 
+                           placeholder="Password (min 6 characters)" 
+                           style="width: 100%; padding: 12px; font-size: 16px;">
+                </div>
+                <button class="finish-btn" id="createAccountBtn" style="width: 100%; background: #2563eb; margin-bottom: 10px;">
+                    Create Account
+                </button>
+                <button class="finish-btn" id="backToLoginBtn" style="width: 100%; background: #64748b;">
+                    Back to Login
+                </button>
+                <div id="signupMessage" style="color: #ef4444; margin-top: 10px; font-size: 14px; text-align: center;"></div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const firstNameInput = document.getElementById('signupFirstName');
+        const lastNameInput = document.getElementById('signupLastName');
+        const emailInput = document.getElementById('signupEmail');
+        const passwordInput = document.getElementById('signupPassword');
+        const messageDiv = document.getElementById('signupMessage');
+        
+        firstNameInput.focus();
+        
+        // Allow Enter key to submit
+        const handleEnter = (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('createAccountBtn').click();
+            }
+        };
+        
+        firstNameInput.addEventListener('keydown', handleEnter);
+        lastNameInput.addEventListener('keydown', handleEnter);
+        emailInput.addEventListener('keydown', handleEnter);
+        passwordInput.addEventListener('keydown', handleEnter);
+        
+        document.getElementById('createAccountBtn').addEventListener('click', async () => {
+            const firstName = firstNameInput.value.trim();
+            const lastName = lastNameInput.value.trim();
             const email = emailInput.value.trim();
             const password = passwordInput.value.trim();
             
+            if (!firstName || !lastName) {
+                messageDiv.textContent = 'Please enter your first and last name';
+                messageDiv.style.color = '#ef4444';
+                return;
+            }
+            
             if (!email || !password) {
                 messageDiv.textContent = 'Please enter email and password';
+                messageDiv.style.color = '#ef4444';
                 return;
             }
             
@@ -139,7 +215,13 @@ class DartScoreTracker {
             
             const { data, error } = await supabase.auth.signUp({
                 email: email,
-                password: password
+                password: password,
+                options: {
+                    data: {
+                        first_name: firstName,
+                        last_name: lastName
+                    }
+                }
             });
             
             if (error) {
@@ -152,13 +234,18 @@ class DartScoreTracker {
                 // Auto-login after signup
                 setTimeout(async () => {
                     this.currentUser = data.user;
-                    this.userName = data.user.email.split('@')[0];
+                    this.userName = `${firstName} ${lastName}`;
                     this.sessionDate = new Date().toISOString().split('T')[0];
                     this.sessionId = this.getSessionId();
                     document.body.removeChild(modal);
                     await this.initializeApp();
                 }, 1000);
             }
+        });
+        
+        document.getElementById('backToLoginBtn').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            this.showAuthScreen();
         });
     }
 
@@ -786,7 +873,7 @@ class DartScoreTracker {
                 day: 'numeric', 
                 year: 'numeric' 
             });
-            userInfoEl.textContent = `👤 ${this.userName} • 📅 ${date}`;
+            userInfoEl.textContent = `Welcome, ${this.userName} • 📅 ${date}`;
             if (logoutBtn) {
                 logoutBtn.classList.remove('hidden');
             }
