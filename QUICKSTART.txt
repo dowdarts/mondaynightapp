@@ -1,0 +1,53 @@
+╔════════════════════════════════════════════════════════════════╗
+║                    SUPABASE QUICK START                        ║
+╚════════════════════════════════════════════════════════════════╝
+
+1️⃣  CREATE ACCOUNT
+   → Go to https://supabase.com
+   → Sign up and create new project
+   → Wait ~2 minutes for setup
+
+2️⃣  RUN DATABASE SETUP
+   → Open SQL Editor in Supabase dashboard
+   → Copy contents of supabase-setup.sql
+   → Paste and click "Run"
+
+3️⃣  GET YOUR CREDENTIALS
+   → Settings → API
+   → Copy "Project URL"
+   → Copy "anon public" key
+
+4️⃣  UPDATE CONFIG FILE
+   → Open supabase-config.js
+   → Replace YOUR_SUPABASE_URL with your Project URL
+   → Replace YOUR_SUPABASE_ANON_KEY with your anon key
+   → Save file
+
+5️⃣  TEST IT!
+   → Open index.html
+   → Press F12 (console)
+   → Look for "Supabase initialized successfully"
+   → Enter scores and close browser
+   → Reopen - data should still be there!
+
+╔════════════════════════════════════════════════════════════════╗
+║                    NEW FEATURES                                ║
+╚════════════════════════════════════════════════════════════════╝
+
+✨ AUTO-SAVE
+   Data saves automatically after every action
+
+✨ DATA PERSISTENCE  
+   Scores survive browser closes/refreshes
+
+✨ ALL DONE FOR NIGHT
+   After Match 5, click button to clear all data
+   and start fresh for next night
+
+╔════════════════════════════════════════════════════════════════╗
+║                    NEED HELP?                                  ║
+╚════════════════════════════════════════════════════════════════╝
+
+📖 Full instructions: See SUPABASE_SETUP.md
+🔧 Troubleshooting: Check browser console (F12)
+💬 Supabase support: https://discord.supabase.com

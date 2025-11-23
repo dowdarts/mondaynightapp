@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Monday Night Average App</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="container">
@@ -175,6 +177,10 @@
                         <span>Total Darts:</span>
                         <span id="statTotalDarts">0</span>
                     </div>
+                    <div class="stat-row">
+                        <span>Total Tons:</span>
+                        <span id="statTotalTons">0</span>
+                    </div>
                     <div class="stat-row highlight">
                         <span>Overall Average:</span>
                         <span id="statOverallAvg">0.00</span>
@@ -191,6 +197,7 @@
         </div>
     </div>
 
+    <script src="supabase-config.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

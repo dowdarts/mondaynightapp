@@ -14,6 +14,31 @@ class DartScoreTracker {
         this.matchComplete = false;
         this.matchHistory = [];
         
+        // Generate or retrieve session ID
+        this.sessionId = this.getSessionId();
+        
+        // Initialize Supabase and load saved data
+        this.initializeApp();
+    }
+
+    getSessionId() {
+        let sessionId = localStorage.getItem('dart_session_id');
+        if (!sessionId) {
+            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('dart_session_id', sessionId);
+        }
+        return sessionId;
+    }
+
+    async initializeApp() {
+        // Initialize Supabase
+        const supabaseReady = initSupabase();
+        
+        if (supabaseReady) {
+            // Load saved data
+            await this.loadFromDatabase();
+        }
+        
         this.init();
         this.updateMatchDisplay();
     }
@@ -127,6 +152,7 @@ class DartScoreTracker {
         }
 
         this.currentInput = '';
+        this.saveToDatabase();
     }
 
     endScore() {
@@ -207,6 +233,7 @@ class DartScoreTracker {
             this.calculateMatchTotals();
             this.clearHighlight();
         }
+        this.saveToDatabase();
     }
 
     calculateGameTotals() {
@@ -372,6 +399,9 @@ class DartScoreTracker {
             gameData: JSON.parse(JSON.stringify(this.gameData))
         });
 
+        // Save to database
+        this.saveToDatabase();
+
         // Move to next match
         this.startNextMatch();
     }
@@ -409,6 +439,9 @@ class DartScoreTracker {
             myFinishes: myFinishes,
             partnerFinishes: partnerFinishes
         });
+        
+        // Save to database
+        this.saveToDatabase();
         
         if (isLastMatch) {
             // Show nightly totals
@@ -461,6 +494,7 @@ class DartScoreTracker {
         
         this.updateMatchDisplay();
         this.highlightCurrentCell();
+        this.saveToDatabase();
     }
 
     updateMatchDisplay() {
@@ -995,13 +1029,23 @@ class DartScoreTracker {
                         </div>
                     </div>
                 </div>
-                <button class="finish-btn win" id="closeNightBtn">Close</button>
+                <div class="edit-modal-buttons">
+                    <button class="finish-btn" id="closeNightBtn" style="background: #64748b;">Close</button>
+                    <button class="finish-btn loss" id="allDoneBtn">🏁 All Done for Night</button>
+                </div>
             </div>
         `;
         document.body.appendChild(modal);
 
         document.getElementById('closeNightBtn').addEventListener('click', () => {
             document.body.removeChild(modal);
+        });
+
+        document.getElementById('allDoneBtn').addEventListener('click', async () => {
+            if (confirm('Are you sure you want to end the night? This will clear all data and start fresh for the next night.')) {
+                await this.resetForNewNight();
+                document.body.removeChild(modal);
+            }
         });
     }
 
@@ -1011,6 +1055,7 @@ class DartScoreTracker {
         let cumulativeScore = 0;
         let cumulativeDarts = 0;
         let totalMyFinishes = 0;
+        let totalTons = 0;
 
         this.matchHistory.forEach(match => {
             if (match.status === 'sit-out') {
@@ -1020,6 +1065,13 @@ class DartScoreTracker {
                 cumulativeScore += parseInt(match.totals.score) || 0;
                 cumulativeDarts += parseInt(match.totals.darts) || 0;
                 totalMyFinishes += match.myFinishes || 0;
+                
+                // Calculate tons from all games in the match
+                for (let game = 1; game <= 3; game++) {
+                    if (match.gameData[game]) {
+                        totalTons += match.gameData[game].tons || 0;
+                    }
+                }
             }
         });
 
@@ -1030,8 +1082,165 @@ class DartScoreTracker {
         document.getElementById('statSitOuts').textContent = totalSitOuts;
         document.getElementById('statTotalScore').textContent = cumulativeScore;
         document.getElementById('statTotalDarts').textContent = cumulativeDarts;
+        document.getElementById('statTotalTons').textContent = totalTons;
         document.getElementById('statOverallAvg').textContent = overallAvg;
         document.getElementById('statMyFinishes').textContent = totalMyFinishes;
+    }
+
+    // Supabase integration methods
+    async saveToDatabase() {
+        if (!supabase) return;
+
+        try {
+            // Save current session state
+            await SupabaseDB.saveSession({
+                sessionId: this.sessionId,
+                currentMatch: this.currentMatch,
+                currentGame: this.currentGame,
+                currentDartBox: this.currentDartBox,
+                gameData: this.gameData,
+                matchComplete: this.matchComplete
+            });
+
+            // Save match history
+            if (this.matchHistory.length > 0) {
+                await SupabaseDB.saveMatchHistory(this.sessionId, this.matchHistory);
+            }
+
+            console.log('Data saved to Supabase');
+        } catch (error) {
+            console.error('Error saving to database:', error);
+        }
+    }
+
+    async loadFromDatabase() {
+        if (!supabase) return;
+
+        try {
+            // Load session state
+            const { data: sessionData, error: sessionError } = await SupabaseDB.loadSession(this.sessionId);
+            
+            if (sessionData && !sessionError) {
+                this.currentMatch = sessionData.current_match || 1;
+                this.currentGame = sessionData.current_game || 1;
+                this.currentDartBox = sessionData.current_dart_box || 3;
+                this.gameData = sessionData.game_data || {
+                    1: { scores: [], totalScore: 0, totalDarts: 0, tons: 0, finish: '', avg: 0 },
+                    2: { scores: [], totalScore: 0, totalDarts: 0, tons: 0, finish: '', avg: 0 },
+                    3: { scores: [], totalScore: 0, totalDarts: 0, tons: 0, finish: '', avg: 0 }
+                };
+                this.matchComplete = sessionData.match_complete || false;
+
+                // Restore the UI for current game
+                this.restoreGameUI();
+            }
+
+            // Load match history
+            const { data: historyData, error: historyError } = await SupabaseDB.loadMatchHistory(this.sessionId);
+            
+            if (historyData && !historyError) {
+                this.matchHistory = historyData;
+            }
+
+            console.log('Data loaded from Supabase');
+        } catch (error) {
+            console.error('Error loading from database:', error);
+        }
+    }
+
+    restoreGameUI() {
+        // Restore all scores in the table
+        for (let game = 1; game <= 3; game++) {
+            const gameData = this.gameData[game];
+            
+            // Restore dart scores
+            gameData.scores.forEach(entry => {
+                const cell = document.querySelector(`.dart-cell[data-game="${game}"][data-dart="${entry.dartBox}"]`);
+                if (cell) {
+                    cell.textContent = entry.score;
+                    cell.classList.add('filled');
+                    if (entry.score >= 95) {
+                        cell.classList.add('high-score');
+                    }
+                }
+            });
+
+            // Restore totals
+            if (gameData.totalScore > 0 || gameData.totalDarts > 0) {
+                document.querySelector(`.score[data-game="${game}"]`).textContent = gameData.totalScore;
+                document.querySelector(`.darts[data-game="${game}"]`).textContent = gameData.totalDarts || '-';
+                document.querySelector(`.tons[data-game="${game}"]`).textContent = gameData.tons || 0;
+                document.querySelector(`.avg[data-game="${game}"]`).textContent = gameData.avg || 0;
+
+                // Restore finish marker
+                const finishCell = document.querySelector(`.finish[data-game="${game}"]`);
+                if (gameData.finishType === 'win') {
+                    finishCell.textContent = '✓';
+                    finishCell.style.color = '#16a34a';
+                } else if (gameData.finishType === 'partner') {
+                    finishCell.textContent = '✓';
+                    finishCell.style.color = '#f97316';
+                } else if (gameData.finishType === 'loss') {
+                    finishCell.textContent = '❌';
+                    finishCell.style.color = '#dc2626';
+                }
+            }
+        }
+
+        // Recalculate match totals
+        this.calculateMatchTotals();
+    }
+
+    async resetForNewNight() {
+        // Clear from database
+        if (supabase) {
+            await SupabaseDB.clearSession(this.sessionId);
+        }
+
+        // Generate new session ID
+        const newSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('dart_session_id', newSessionId);
+        this.sessionId = newSessionId;
+
+        // Reset all app state
+        this.currentMatch = 1;
+        this.currentGame = 1;
+        this.currentDartBox = 3;
+        this.currentInput = '';
+        this.matchComplete = false;
+        this.matchHistory = [];
+        
+        this.gameData = {
+            1: { scores: [], totalScore: 0, totalDarts: 0, tons: 0, finish: '', avg: 0 },
+            2: { scores: [], totalScore: 0, totalDarts: 0, tons: 0, finish: '', avg: 0 },
+            3: { scores: [], totalScore: 0, totalDarts: 0, tons: 0, finish: '', avg: 0 }
+        };
+
+        // Clear all UI
+        document.querySelectorAll('.dart-cell').forEach(cell => {
+            cell.textContent = '';
+            cell.classList.remove('filled', 'end-marker', 'active', 'high-score', 'scratched');
+        });
+
+        for (let game = 1; game <= 3; game++) {
+            document.querySelector(`.score[data-game="${game}"]`).textContent = '0';
+            document.querySelector(`.darts[data-game="${game}"]`).textContent = '-';
+            document.querySelector(`.tons[data-game="${game}"]`).textContent = '0';
+            document.querySelector(`.finish[data-game="${game}"]`).textContent = '';
+            document.querySelector(`.avg[data-game="${game}"]`).textContent = '0';
+        }
+
+        document.getElementById('totalScore').textContent = '0';
+        document.getElementById('totalDarts').textContent = '0';
+        document.getElementById('dartAvg').textContent = '0.00';
+
+        this.updateMatchDisplay();
+        this.highlightCurrentCell();
+        
+        // Switch to current tab
+        this.switchTab('current');
+
+        alert('Ready for a new night! All previous data has been cleared.');
     }
 }
 

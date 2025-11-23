@@ -88,10 +88,22 @@ The app is fully optimized for mobile devices with:
 
 ## Data Management
 
-**Note**: This app stores data in browser memory only. Data is not saved between sessions. To preserve your scores:
-- Take screenshots of your stats
-- Export data manually if needed
-- Consider adding a backend for persistent storage (future enhancement)
+### Persistent Storage with Supabase
+
+This app now supports persistent data storage using Supabase! Your scores and match history will be automatically saved and restored even after closing the browser.
+
+**Setup Required:** Follow the instructions in `SUPABASE_SETUP.md` to:
+1. Create a free Supabase account
+2. Set up the database tables
+3. Configure your API credentials
+
+**Features:**
+- ✅ Auto-save after every action
+- ✅ Data persists across browser sessions
+- ✅ "All Done for Night" button to clear data and start fresh
+- ✅ No data loss from accidental browser closes
+
+**Without Supabase:** The app will still work but data will only persist during the current browser session (stored in memory only)
 
 ## Future Enhancements
 
