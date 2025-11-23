@@ -1308,6 +1308,31 @@ class DartScoreTracker {
         }
 
         let html = '';
+        
+        // Add Save Session button if 5 matches are completed
+        if (this.matchHistory.length === 5) {
+            html += `
+                <div style="background: #16a34a; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                    <button id="saveSessionBtn" style="
+                        background: #fff;
+                        color: #16a34a;
+                        border: none;
+                        padding: 12px 30px;
+                        border-radius: 8px;
+                        font-size: 16px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                    ">
+                        💾 SAVE SESSION
+                    </button>
+                    <p style="color: #fff; margin-top: 10px; font-size: 14px;">
+                        All 5 matches completed - Ready to save to Year to Date!
+                    </p>
+                </div>
+            `;
+        }
+        
         this.matchHistory.forEach((match, index) => {
             if (match.status === 'sit-out') {
                 html += `
@@ -1329,6 +1354,24 @@ class DartScoreTracker {
         });
 
         historyContent.innerHTML = html;
+        
+        // Add event listener for Save Session button if it exists
+        const saveSessionBtn = document.getElementById('saveSessionBtn');
+        if (saveSessionBtn) {
+            saveSessionBtn.addEventListener('click', () => {
+                this.collectAndSaveNightStats();
+            });
+            
+            // Add hover effect
+            saveSessionBtn.addEventListener('mouseenter', (e) => {
+                e.target.style.transform = 'scale(1.05)';
+                e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+            });
+            saveSessionBtn.addEventListener('mouseleave', (e) => {
+                e.target.style.transform = 'scale(1)';
+                e.target.style.boxShadow = 'none';
+            });
+        }
         
         // Add event listeners for edit buttons
         document.querySelectorAll('.edit-match-btn').forEach(btn => {
