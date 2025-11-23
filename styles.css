@@ -65,6 +65,12 @@ h1 {
     transform: translateY(0);
 }
 
+.user-info {
+    color: #16a34a;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
 .clear-stats-button {
     background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
     color: white;
