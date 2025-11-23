@@ -646,10 +646,15 @@ class DartScoreTracker {
 
         const dartAvg = totalDarts > 0 ? (totalScore / totalDarts).toFixed(2) : 0.00;
 
-        document.getElementById('totalScore').textContent = totalScore;
-        document.getElementById('totalDarts').textContent = totalDarts;
-        document.getElementById('totalTons').textContent = totalTons;
-        document.getElementById('dartAvg').textContent = dartAvg;
+        const totalScoreEl = document.getElementById('totalScore');
+        const totalDartsEl = document.getElementById('totalDarts');
+        const totalTonsEl = document.getElementById('totalTons');
+        const dartAvgEl = document.getElementById('dartAvg');
+
+        if (totalScoreEl) totalScoreEl.textContent = totalScore;
+        if (totalDartsEl) totalDartsEl.textContent = totalDarts;
+        if (totalTonsEl) totalTonsEl.textContent = totalTons;
+        if (dartAvgEl) dartAvgEl.textContent = dartAvg;
     }
 
     moveToNextDartBox() {
