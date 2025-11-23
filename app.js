@@ -939,17 +939,18 @@ class DartScoreTracker {
         
         const currentValue = cell.textContent.trim();
         const input = document.createElement('input');
-        input.type = 'tel';
+        input.type = 'text';
         input.className = 'cell-edit-input';
         input.value = '';
         input.placeholder = currentValue || '0';
+        input.setAttribute('inputmode', 'numeric');
         
         cell.classList.add('editing-input');
         cell.textContent = '';
         cell.appendChild(input);
         input.focus();
         
-        const saveEdit = async () => {
+        const saveEdit = () => {
             const newValue = input.value.trim();
             cell.classList.remove('editing-input');
             
@@ -970,15 +971,11 @@ class DartScoreTracker {
                 return;
             }
             
-            // Update score
+            // Update score in memory only - don't save to database yet
             this.updateHistoryScore(matchIndex, game, dartBox, numValue);
             
-            // Save to database
-            await this.saveToDatabase();
-            
-            // Update views
-            this.updateHistoryView();
-            this.updateOverallStats();
+            // Update just this cell display
+            cell.textContent = numValue;
         };
         
         const cancelEdit = () => {
