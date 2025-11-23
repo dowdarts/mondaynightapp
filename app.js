@@ -733,7 +733,12 @@ class DartScoreTracker {
 
     sitOut() {
         // Confirmation prompt - sit out cannot be undone
-        if (!confirm('Are you sure you want to sit out this entire match? This action cannot be undone.')) {
+        const isMatch5 = this.currentMatch === 5;
+        const message = isMatch5 
+            ? 'Are you sure you want to sit out Match 5? This will save all your matches and collect totals for the night.'
+            : 'Are you sure you want to sit out this entire match? This action cannot be undone.';
+        
+        if (!confirm(message)) {
             return;
         }
 
@@ -786,8 +791,14 @@ class DartScoreTracker {
         // Save to database
         this.saveToDatabase();
 
-        // Move to next match
-        this.startNextMatch();
+        // If match 5, collect totals and end night
+        if (this.currentMatch === 5) {
+            console.log('Match 5 sit-out saved. Collecting totals from all matches.');
+            this.collectAndSaveNightStats();
+        } else {
+            // Move to next match
+            this.startNextMatch();
+        }
     }
 
     async logout() {
