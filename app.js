@@ -807,13 +807,6 @@ class DartScoreTracker {
 
     nightDone() {
         const isLastMatch = this.currentMatch === 5;
-        
-        // If match 5 is saved, save night stats
-        if (isLastMatch && this.match5Saved) {
-            this.saveNightStats();
-            return;
-        }
-        
         // Show custom confirmation modal
         this.showNextMatchConfirmation(isLastMatch);
     }
@@ -822,9 +815,9 @@ class DartScoreTracker {
         const modal = document.createElement('div');
         modal.className = 'finish-modal';
         
-        const title = isLastMatch ? 'Save Final Match?' : 'Move to Next Match?';
+        const title = isLastMatch ? 'Collect & Save Totals?' : 'Move to Next Match?';
         const message = isLastMatch 
-            ? 'This will save Match 5. You can then review all your stats before saving your night stats.'
+            ? 'This will save all completed matches to your stats and start a fresh night from Match 1.'
             : `This will save Match ${this.currentMatch} and start Match ${this.currentMatch + 1}.`;
         
         modal.innerHTML = `
@@ -907,11 +900,8 @@ class DartScoreTracker {
         this.saveToDatabase();
         
         if (isLastMatch) {
-            // Mark match 5 as saved
-            this.match5Saved = true;
-            // Update button to show "Save Night Stats"
-            this.updateMatchDisplay();
-            // User can now review all tabs before saving night stats
+            // Save all completed matches as nightly stats and reset
+            this.collectAndSaveNightStats();
         } else {
             // Move to next match
             this.startNextMatch();
@@ -998,12 +988,9 @@ class DartScoreTracker {
         
         // Update button text based on current match
         const nextMatchBtn = document.getElementById('nextMatchBtn');
-        if (this.currentMatch === 5 && this.match5Saved) {
-            nextMatchBtn.innerHTML = '📊 SAVE NIGHT STATS';
+        if (this.currentMatch === 5) {
+            nextMatchBtn.innerHTML = '📊 COLLECT TOTALS';
             nextMatchBtn.style.background = '#16a34a';
-        } else if (this.currentMatch === 5) {
-            nextMatchBtn.innerHTML = '💾 SAVE FINAL MATCH';
-            nextMatchBtn.style.background = '#9333ea';
         } else {
             nextMatchBtn.innerHTML = '▶ NEXT MATCH';
             nextMatchBtn.style.background = '#9333ea';
@@ -1741,9 +1728,73 @@ class DartScoreTracker {
         this.calculateMatchTotals();
     }
 
-    saveNightStats() {
-        // Show the nightly totals modal with save option
-        this.showNightlyTotals();
+    async collectAndSaveNightStats() {
+        // Calculate totals from completed matches only
+        let totalCompleted = 0;
+        let cumulativeScore = 0;
+        let cumulativeDarts = 0;
+        let totalTons = 0;
+        let totalMyFinishes = 0;
+
+        this.matchHistory.forEach(match => {
+            if (match.status !== 'sit-out') {
+                totalCompleted++;
+                cumulativeScore += parseInt(match.totals.score) || 0;
+                cumulativeDarts += parseInt(match.totals.darts) || 0;
+                totalTons += parseInt(match.totals.tons) || 0;
+                totalMyFinishes += match.myFinishes || 0;
+            }
+        });
+
+        const overallAvg = cumulativeDarts > 0 ? (cumulativeScore / cumulativeDarts).toFixed(2) : '0.00';
+
+        // Save to nightly_stats table
+        if (supabase && this.currentUser) {
+            try {
+                const nightlyData = {
+                    session_date: this.sessionDate,
+                    user_id: this.currentUser.id,
+                    user_name: this.userName,
+                    total_matches: totalCompleted,
+                    total_score: cumulativeScore,
+                    total_darts: cumulativeDarts,
+                    total_tons: totalTons,
+                    total_finishes: totalMyFinishes,
+                    avg_score: parseFloat(overallAvg)
+                };
+
+                await SupabaseDB.saveNightlyStats(nightlyData);
+                
+                // Show success and reset
+                this.showSuccessAndReset(totalCompleted, cumulativeScore, cumulativeDarts, overallAvg, totalMyFinishes);
+            } catch (error) {
+                console.error('Error saving nightly stats:', error);
+                alert('Failed to save nightly stats. Please try again.');
+            }
+        }
+    }
+
+    showSuccessAndReset(matches, score, darts, avg, finishes) {
+        const modal = document.createElement('div');
+        modal.className = 'finish-modal';
+        modal.innerHTML = `
+            <div class="finish-modal-content">
+                <h2>✅ Night Stats Saved!</h2>
+                <div style="background: #1e293b; border-radius: 12px; padding: 20px; margin: 20px 0;">
+                    <div style="color: #9ca3af; margin-bottom: 10px;">Matches: ${matches} | Score: ${score} | Darts: ${darts}</div>
+                    <div style="color: #10b981; font-size: 24px; font-weight: bold;">Average: ${avg}</div>
+                    <div style="color: #f97316; margin-top: 10px;">Games Finished: ${finishes}</div>
+                </div>
+                <p style="color: #9ca3af; margin-bottom: 20px;">Your stats have been saved to the Year to Date leaderboard!</p>
+                <button class="finish-btn win" id="startFreshBtn">🌙 Start New Night</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        document.getElementById('startFreshBtn').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            this.startNewNight();
+        });
     }
 
     async startNewNight() {
@@ -1776,7 +1827,6 @@ class DartScoreTracker {
         this.currentDartBox = 3;
         this.currentInput = '';
         this.matchComplete = false;
-        this.match5Saved = false;
         this.matchHistory = [];
         
         this.gameData = {
