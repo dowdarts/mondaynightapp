@@ -13,21 +13,66 @@ class DartScoreTracker {
         };
         this.matchComplete = false;
         this.matchHistory = [];
+        this.userName = '';
+        this.sessionDate = '';
         
-        // Generate or retrieve session ID
-        this.sessionId = this.getSessionId();
+        // Show welcome screen first
+        this.showWelcomeScreen();
+    }
+
+    showWelcomeScreen() {
+        const modal = document.createElement('div');
+        modal.className = 'finish-modal';
+        modal.id = 'welcomeModal';
         
-        // Initialize Supabase and load saved data
-        this.initializeApp();
+        modal.innerHTML = `
+            <div class="finish-modal-content">
+                <h2>Welcome to Monday Night Darts</h2>
+                <p style="color: #9ca3af; margin-bottom: 20px;">Enter your name to get started</p>
+                <div style="margin-bottom: 20px;">
+                    <input type="text" id="userNameInput" class="edit-score-input" 
+                           placeholder="Enter your name" 
+                           style="width: 100%; padding: 12px; font-size: 16px; text-align: center;">
+                </div>
+                <button class="finish-btn" id="startSessionBtn" style="width: 100%; background: #16a34a;">
+                    Start Session
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const nameInput = document.getElementById('userNameInput');
+        nameInput.focus();
+        
+        // Allow Enter key to submit
+        nameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('startSessionBtn').click();
+            }
+        });
+        
+        document.getElementById('startSessionBtn').addEventListener('click', async () => {
+            const name = nameInput.value.trim();
+            if (!name) {
+                alert('Please enter your name');
+                return;
+            }
+            
+            this.userName = name;
+            this.sessionDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            this.sessionId = this.getSessionId();
+            
+            document.body.removeChild(modal);
+            
+            // Initialize Supabase and load saved data
+            await this.initializeApp();
+        });
     }
 
     getSessionId() {
-        let sessionId = localStorage.getItem('dart_session_id');
-        if (!sessionId) {
-            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('dart_session_id', sessionId);
-        }
-        return sessionId;
+        // Create session ID with date and username
+        return `${this.userName}_${this.sessionDate}_${Math.random().toString(36).substr(2, 9)}`;
     }
 
     async initializeApp() {
@@ -35,7 +80,7 @@ class DartScoreTracker {
         const supabaseReady = initSupabase();
         
         if (supabaseReady) {
-            // Load saved data
+            // Load saved data for today only
             await this.loadFromDatabase();
         }
         
@@ -623,6 +668,18 @@ class DartScoreTracker {
         document.querySelector('.current-match').textContent = `Current: Match ${this.currentMatch}`;
         document.querySelector('h3').textContent = `MATCH ${this.currentMatch} TOTALS`;
         document.getElementById('historyCount').textContent = this.matchHistory.length;
+        
+        // Display user info
+        const userInfoEl = document.getElementById('userInfo');
+        if (userInfoEl && this.userName) {
+            const date = new Date(this.sessionDate).toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
+            userInfoEl.textContent = `👤 ${this.userName} • 📅 ${date}`;
+        }
         
         // Update button text based on current match
         const nextMatchBtn = document.getElementById('nextMatchBtn');
