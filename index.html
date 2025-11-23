@@ -1,13 +1,196 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Monday Night Average App</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1># Monday Night Average App</h1>
+            <div class="current-match">Current: Match 1</div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="current">📋 Current</button>
+            <button class="tab" data-tab="history">🕐 History (<span id="historyCount">0</span>)</button>
+            <button class="tab" data-tab="stats">📊 Overall Stats</button>
+        </div>
+
+        <div id="currentTab" class="tab-content active">
+        <div class="scoring-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Game</th>
+                        <th colspan="7">Darts</th>
+                        <th colspan="4">Totals</th>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <th>3</th>
+                        <th>6</th>
+                        <th>9</th>
+                        <th>12</th>
+                        <th>15</th>
+                        <th>18</th>
+                        <th>21</th>
+                        <th>Score</th>
+                        <th>Darts</th>
+                        <th>Tons</th>
+                        <th>Finish</th>
+                        <th>Avg</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="game-number">1</td>
+                        <td class="dart-cell" data-game="1" data-dart="3"></td>
+                        <td class="dart-cell" data-game="1" data-dart="6"></td>
+                        <td class="dart-cell" data-game="1" data-dart="9"></td>
+                        <td class="dart-cell" data-game="1" data-dart="12"></td>
+                        <td class="dart-cell" data-game="1" data-dart="15"></td>
+                        <td class="dart-cell" data-game="1" data-dart="18"></td>
+                        <td class="dart-cell" data-game="1" data-dart="21"></td>
+                        <td class="total-cell score" data-game="1">0</td>
+                        <td class="total-cell darts" data-game="1">-</td>
+                        <td class="total-cell tons" data-game="1">0</td>
+                        <td class="total-cell finish" data-game="1"></td>
+                        <td class="total-cell avg" data-game="1">0</td>
+                    </tr>
+                    <tr>
+                        <td class="game-number">2</td>
+                        <td class="dart-cell" data-game="2" data-dart="3"></td>
+                        <td class="dart-cell" data-game="2" data-dart="6"></td>
+                        <td class="dart-cell" data-game="2" data-dart="9"></td>
+                        <td class="dart-cell" data-game="2" data-dart="12"></td>
+                        <td class="dart-cell" data-game="2" data-dart="15"></td>
+                        <td class="dart-cell" data-game="2" data-dart="18"></td>
+                        <td class="dart-cell" data-game="2" data-dart="21"></td>
+                        <td class="total-cell score" data-game="2">0</td>
+                        <td class="total-cell darts" data-game="2">-</td>
+                        <td class="total-cell tons" data-game="2">0</td>
+                        <td class="total-cell finish" data-game="2"></td>
+                        <td class="total-cell avg" data-game="2">0</td>
+                    </tr>
+                    <tr>
+                        <td class="game-number">3</td>
+                        <td class="dart-cell" data-game="3" data-dart="3"></td>
+                        <td class="dart-cell" data-game="3" data-dart="6"></td>
+                        <td class="dart-cell" data-game="3" data-dart="9"></td>
+                        <td class="dart-cell" data-game="3" data-dart="12"></td>
+                        <td class="dart-cell" data-game="3" data-dart="15"></td>
+                        <td class="dart-cell" data-game="3" data-dart="18"></td>
+                        <td class="dart-cell" data-game="3" data-dart="21"></td>
+                        <td class="total-cell score" data-game="3">0</td>
+                        <td class="total-cell darts" data-game="3">-</td>
+                        <td class="total-cell tons" data-game="3">0</td>
+                        <td class="total-cell finish" data-game="3"></td>
+                        <td class="total-cell avg" data-game="3">0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="main-content">
+            <div class="match-totals">
+                <h3>MATCH 1 TOTALS</h3>
+                <div class="total-row">
+                    <span>Total Score:</span>
+                    <span class="total-value" id="totalScore">0</span>
+                </div>
+                <div class="total-row">
+                    <span>Total Darts:</span>
+                    <span class="total-value" id="totalDarts">0</span>
+                </div>
+                <div class="total-row average">
+                    <span>1 Dart Avg:</span>
+                    <span class="total-value" id="dartAvg">0.00</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="action-buttons">
+                    <button class="action-btn sit-out">👤 SIT OUT</button>
+                    <button class="action-btn end-score">/ END SCORE</button>
+                    <button class="action-btn night-done" id="nextMatchBtn">▶ NEXT MATCH</button>
+                </div>
+                
+                <div class="undo-row">
+                    <button class="undo-btn">↶ UNDO</button>
+                </div>
+
+                <div class="number-pad">
+                    <button class="num-btn">1</button>
+                    <button class="num-btn">2</button>
+                    <button class="num-btn">3</button>
+                    <button class="num-btn">4</button>
+                    <button class="num-btn">5</button>
+                    <button class="num-btn">6</button>
+                    <button class="num-btn">7</button>
+                    <button class="num-btn">8</button>
+                    <button class="num-btn">9</button>
+                    <button class="num-btn backspace">←</button>
+                    <button class="num-btn">0</button>
+                    <button class="num-btn enter">Enter</button>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <div id="historyTab" class="tab-content">
+            <h2>Match History</h2>
+            <div id="historyContent" class="history-list">
+                <p class="empty-message">No matches completed yet. Complete a match to see it here.</p>
+            </div>
+        </div>
+
+        <div id="statsTab" class="tab-content">
+            <h2>Overall Statistics</h2>
+            <div id="statsContent" class="stats-container">
+                <div class="stat-card">
+                    <h3>Night Totals</h3>
+                    <div class="stat-row">
+                        <span>Total Matches:</span>
+                        <span id="statTotalMatches">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Completed:</span>
+                        <span id="statCompleted">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Sit Outs:</span>
+                        <span id="statSitOuts">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Cumulative Stats</h3>
+                    <div class="stat-row">
+                        <span>Total Score:</span>
+                        <span id="statTotalScore">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Total Darts:</span>
+                        <span id="statTotalDarts">0</span>
+                    </div>
+                    <div class="stat-row highlight">
+                        <span>Overall Average:</span>
+                        <span id="statOverallAvg">0.00</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Finish Statistics</h3>
+                    <div class="stat-row highlight">
+                        <span>Games I Won:</span>
+                        <span id="statMyFinishes">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
 </html>

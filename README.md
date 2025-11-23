@@ -1,138 +1,117 @@
-# Monday Night Darts Average Tracker 🎯
+# Monday Night Average App
 
-A modern, tablet-friendly React web application for tracking darts scores and calculating averages during Monday night matches. Built with a beautiful gradient UI optimized for touch interactions.
+A mobile-friendly dart league scoring application designed to track player averages and performance across multiple matches.
 
-## Features ✨
+## Features
 
-- **Real-time Score Tracking**: Track scores for 3 games per match with customizable darts thrown
-- **Live Average Calculation**: Automatic 1-dart average calculation for each game and match
-- **Match History**: View and edit completed match history with detailed statistics
-- **Overall Statistics**: Comprehensive stats across all matches including total score, darts, tons, and finishes
-- **Tablet-Optimized UI**: Large touch targets, gradient designs, and responsive layouts for excellent tablet experience
-- **Sit Out Tracking**: Mark matches as "Sat Out" for accurate record keeping
-- **Night Reset**: Start fresh nights while preserving historical data
+### Scoring System
+- **3-Game Match Format**: Track scores across 3 games per match
+- **7 Dart Boxes**: Score entry for 3, 6, 9, 12, 15, 18, and 21 dart columns
+- **Automatic Calculations**: Real-time calculation of totals, dart counts, and averages
+- **High Score Highlighting**: Scores of 95+ are automatically circled in green
 
-## Technology Stack 🛠️
+### Match Management
+- **5 Matches Per Night**: Complete tracking for all 5 rounds
+- **Sit-Out Functionality**: Mark matches you didn't play with automatic scratching
+- **Finish Tracking**: Record wins, losses, and partner finishes for each game
 
-- **React 18.2.0** - Modern UI framework with hooks
-- **Vite 5.0.8** - Fast build tool and dev server
-- **Tailwind CSS 3.3.6** - Utility-first CSS framework
-- **Lucide React** - Beautiful icon library
-- **PostCSS & Autoprefixer** - CSS processing
+### Data & History
+- **History Tab**: View all previous matches with full score details
+- **Overall Stats Tab**: Cumulative statistics across all matches
+- **Edit Capability**: Click any historical score to correct mistakes
+- **Nightly Totals**: Comprehensive summary at the end of each night
 
-## Getting Started 🚀
+## How to Use
 
-### Prerequisites
+### Score Entry
+1. **Number Pad**: Click numbers or use your keyboard to enter scores
+2. **Enter Key**: Press Enter or click the Enter button to confirm and move to the next dart box
+3. **End Score (/)**: When below 100, press `/` or click the `/` button to end scoring
+4. **Undo**: Remove the last entered score if needed
 
-- Node.js (v16 or higher recommended)
-- npm or yarn
+### Keyboard Shortcuts
+- `0-9`: Enter score digits
+- `Enter`: Confirm score and advance to next box
+- `/`: Mark end of score (when under 100)
+- `Backspace`: Delete current input or undo last score
 
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/monday-night-darts-app.git
-cd monday-night-darts-app
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Start the development server:
-```bash
-npm run dev
-```
-
-4. Open your browser to `http://localhost:5173`
-
-### Build for Production
-
-```bash
-npm run build
-```
-
-The production-ready files will be in the `dist/` directory.
-
-### Preview Production Build
-
-```bash
-npm run preview
-```
-
-## How to Use 📖
-
-### Editing Mode
-1. Click **"Edit Scores"** to enter editing mode
-2. Enter scores for each game by clicking cells
-3. Use the on-screen keypad or keyboard to input values
-4. Mark tons (180s) by clicking the 🎯 column
-5. Set finish type (My Finish, Partner Finish, or Game Lost)
-6. Click **"Save Changes"** when done
-
-### Completing Matches
-- After completing Game 3, the match is automatically saved to History
-- A new Match begins immediately
-- View completed matches in the **"History"** tab
-
-### Statistics
-- **Current Match**: View live totals at the top of the screen
-- **Overall Stats**: Check cumulative statistics across all matches in the **"Overall Stats"** tab
+### Game Flow
+1. Enter scores for each dart box (3, 6, 9, 12, 15, 18, 21)
+2. When finished scoring, press `/` to end the game
+3. Choose finish result: Win (✓), Loss (✗), or Partner Win (✓)
+4. Complete all 3 games in the match
+5. Click "NEXT MATCH" to move to the next round
+6. After Match 5, click "END NIGHT" to view nightly totals
 
 ### Special Actions
-- **Sit Out**: Mark current match as sat out (archived with S/O status)
-- **Night Complete**: Reset to Match #1 while preserving history
+- **Sit Out**: Skip a match if you're not playing
+- **Edit History**: Click on any score in the History tab to edit
+- **View Stats**: Check your overall performance in the Stats tab
 
-## Design Features 🎨
+## Installation
 
-- **Gradient Backgrounds**: Modern gradient color schemes throughout
-- **Touch-Friendly**: Minimum 44x44px touch targets for all interactive elements
-- **Responsive Design**: Optimized for mobile, tablet, and desktop
-- **Smooth Animations**: fadeInUp animations and scale transitions
-- **Custom Scrollbar**: Sleek slate-themed scrollbar
-- **Visual Feedback**: Active states, hover effects, and scale feedback
+### Quick Start
+1. Download or clone this repository
+2. Open `index.html` in any modern web browser
+3. Start scoring!
 
-## Project Structure 📁
+### No Installation Required
+This is a standalone web application that runs entirely in your browser. No server, database, or internet connection needed.
 
-```
-monday-night-darts-app/
-├── src/
-│   ├── App.jsx          # Main application component
-│   ├── main.jsx         # React entry point
-│   └── index.css        # Global styles and Tailwind imports
-├── index.html           # HTML entry point
-├── package.json         # Dependencies and scripts
-├── vite.config.js       # Vite configuration
-├── tailwind.config.js   # Tailwind CSS configuration
-├── postcss.config.js    # PostCSS configuration
-└── README.md           # This file
-```
+## Technical Details
 
-## Browser Support 🌐
+### Technology Stack
+- **HTML5**: Semantic structure
+- **CSS3**: Responsive mobile-first design
+- **Vanilla JavaScript**: No frameworks or dependencies
+- **Local Storage**: All data stored in browser memory
 
-- Modern browsers (Chrome, Firefox, Safari, Edge)
+### Browser Compatibility
+- Chrome/Edge (recommended)
+- Firefox
+- Safari
 - Mobile browsers (iOS Safari, Chrome Mobile)
-- Tablet browsers optimized
 
-## Contributing 🤝
+### Files
+- `index.html` - Main application structure
+- `app.js` - Scoring logic and state management
+- `styles.css` - Responsive styling
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## Mobile Optimization
 
-## License 📄
+The app is fully optimized for mobile devices with:
+- Touch-friendly buttons (minimum 48px height)
+- Horizontal scrolling tables for small screens
+- Compact spacing for maximum screen usage
+- Large, easy-to-tap number pad
+- Responsive text sizing
 
-This project is open source and available under the [MIT License](LICENSE).
+## Data Management
 
-## Acknowledgments 🙏
+**Note**: This app stores data in browser memory only. Data is not saved between sessions. To preserve your scores:
+- Take screenshots of your stats
+- Export data manually if needed
+- Consider adding a backend for persistent storage (future enhancement)
 
-- Built with ❤️ for Monday Night Darts
-- Icons by [Lucide](https://lucide.dev/)
-- Styled with [Tailwind CSS](https://tailwindcss.com/)
+## Future Enhancements
 
-## Support 💬
+Potential features for future versions:
+- Local storage persistence between sessions
+- Export to CSV or PDF
+- Print-friendly score sheets
+- Player profiles and comparison
+- Season-long statistics
+- Cloud backup integration
 
-For issues, questions, or suggestions, please open an issue on GitHub.
+## License
+
+This project is open source and available for personal use.
+
+## Support
+
+For issues or questions about using the app, please refer to the game flow instructions above or check the code comments in `app.js`.
 
 ---
 
-**Happy Darting! 🎯**
+**Version**: 1.0  
+**Last Updated**: November 2025
