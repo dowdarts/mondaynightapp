@@ -120,13 +120,7 @@ const SupabaseDB = {
     async clearSession(sessionId) {
         if (!supabase) return { error: 'Supabase not initialized' };
         
-        // Delete match history
-        await supabase
-            .from('match_history')
-            .delete()
-            .eq('session_id', sessionId);
-        
-        // Delete session
+        // Only delete the current session state, keep match_history for YTD stats
         const { error } = await supabase
             .from('dart_sessions')
             .delete()
@@ -158,11 +152,12 @@ const SupabaseDB = {
     },
 
     // Get Year to Date leaderboard from nightly_stats
+    // This aggregates all saved nights (not individual matches) for YTD totals
     async getYTDLeaderboard() {
         if (!supabase) return { error: 'Supabase not initialized' };
         
         try {
-            // Get all nightly stats from this year
+            // Get all nightly stats from this year (match_history stays intact for historical data)
             const currentYear = new Date().getFullYear();
             const yearStart = `${currentYear}-01-01`;
             

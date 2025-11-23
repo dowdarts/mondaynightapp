@@ -1798,15 +1798,15 @@ class DartScoreTracker {
     }
 
     async startNewNight() {
-        // Clear session from database (match history and current session)
+        // Only clear current session state from database, keep all match_history for YTD
         if (supabase) {
             await SupabaseDB.clearSession(this.sessionId);
         }
 
-        // Clear local storage session data
+        // Clear local storage to force new session ID on reload
         localStorage.removeItem('dart_session_id');
         
-        // Reload the page to start fresh
+        // Reload the page to start fresh with new date/session
         window.location.reload();
     }
 
