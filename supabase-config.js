@@ -92,28 +92,41 @@ const SupabaseDB = {
     async loadMatchHistory(sessionId) {
         if (!supabase) return { error: 'Supabase not initialized' };
         
+        console.log(`🔍 Querying match_history for session_id: ${sessionId}`);
+        
         const { data, error } = await supabase
             .from('match_history')
             .select('*')
             .eq('session_id', sessionId)
             .order('match_number', { ascending: true });
         
-        if (data) {
+        if (error) {
+            console.error('❌ Error loading match history:', error);
+            return { data: [], error };
+        }
+        
+        console.log(`✅ Found ${data?.length || 0} match records in database`);
+        
+        if (data && data.length > 0) {
             // Transform back to app format
+            const transformed = data.map(record => ({
+                match: record.match_number,
+                status: record.status,
+                gameData: record.game_data,
+                totals: record.totals,
+                myFinishes: record.my_finishes,
+                partnerFinishes: record.partner_finishes
+            }));
+            
+            console.log('📊 Transformed match data:', transformed);
+            
             return {
-                data: data.map(record => ({
-                    match: record.match_number,
-                    status: record.status,
-                    gameData: record.game_data,
-                    totals: record.totals,
-                    myFinishes: record.my_finishes,
-                    partnerFinishes: record.partner_finishes
-                })),
+                data: transformed,
                 error: null
             };
         }
         
-        return { data: [], error };
+        return { data: [], error: null };
     },
 
     // Clear all data for a session (for "All Done for Night")

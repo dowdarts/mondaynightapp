@@ -1182,6 +1182,7 @@ class DartScoreTracker {
             // Show current session matches
             this.updateHistoryView();
         } else {
+            console.log(`📅 Loading matches for date: ${dateValue}, user: ${this.currentUser.id}`);
             // Load historical session matches
             const { data: matches, error } = await SupabaseDB.loadMatchHistoryByDate(this.currentUser.id, dateValue);
             
@@ -1189,6 +1190,8 @@ class DartScoreTracker {
                 console.error('Error loading historical matches:', error);
                 return;
             }
+            
+            console.log(`📅 Loaded ${matches?.length || 0} matches for session:`, matches);
             
             // Display historical matches (read-only)
             this.displayHistoricalMatches(matches || [], dateValue);
