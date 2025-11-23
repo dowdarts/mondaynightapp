@@ -151,27 +151,27 @@ const SupabaseDB = {
         return { data, error };
     },
 
-    // Get all session dates for the current user
+    // Get all session dates for the current user from completed sessions
     async getUserSessionDates(userId) {
         if (!supabase) return { error: 'Supabase not initialized' };
         
         try {
-            // Get distinct session dates from match_history for this user
-            const { data, error } = await supabase
-                .from('match_history')
-                .select('session_id')
-                .like('session_id', `${userId}_%`)
-                .order('created_at', { ascending: false });
+            // Get all completed sessions from nightly_stats (saved sessions only)
+            const { data: nightlyData, error: nightlyError } = await supabase
+                .from('nightly_stats')
+                .select('session_date')
+                .eq('user_id', userId)
+                .order('session_date', { ascending: false });
             
-            if (error) return { data: null, error };
+            if (nightlyError) {
+                console.error('Error fetching from nightly_stats:', nightlyError);
+                return { data: null, error: nightlyError };
+            }
             
-            // Extract unique dates from session IDs (format: userId_YYYY-MM-DD)
-            const uniqueDates = [...new Set(data.map(record => {
-                const parts = record.session_id.split('_');
-                return parts.length > 1 ? parts[1] : null;
-            }))].filter(date => date !== null);
+            // Extract unique session dates
+            const uniqueDates = [...new Set(nightlyData.map(record => record.session_date))];
             
-            console.log(`📅 Found ${data.length} match_history records, ${uniqueDates.length} unique session dates:`, uniqueDates);
+            console.log(`📅 Found ${nightlyData.length} completed sessions for user, ${uniqueDates.length} unique dates:`, uniqueDates);
             
             return { data: uniqueDates, error: null };
         } catch (error) {

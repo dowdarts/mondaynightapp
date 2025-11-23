@@ -1165,23 +1165,21 @@ class DartScoreTracker {
         console.log(`📅 Populating dropdown with ${dates.length} dates. Current session: ${this.sessionDate}`);
         
         // Clear existing options except "Current Session"
-        select.innerHTML = '<option value="current">Current Session</option>';
+        select.innerHTML = '<option value="current">Current Session (In Progress)</option>';
         
-        // Add past session dates
+        // Add ALL past session dates for this user
         dates.forEach(date => {
-            if (date !== this.sessionDate) { // Don't duplicate current session
-                const dateObj = new Date(date);
-                const formattedDate = dateObj.toLocaleDateString('en-US', { 
-                    weekday: 'short', 
-                    month: 'short', 
-                    day: 'numeric', 
-                    year: 'numeric' 
-                });
-                const option = document.createElement('option');
-                option.value = date;
-                option.textContent = formattedDate;
-                select.appendChild(option);
-            }
+            const dateObj = new Date(date);
+            const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
+            const option = document.createElement('option');
+            option.value = date;
+            option.textContent = formattedDate;
+            select.appendChild(option);
         });
     }
 
