@@ -664,76 +664,74 @@ const DartsApp = () => {
   }
 
   return (
-    <div className="min-h-screen text-white font-sans flex flex-col items-center p-3 sm:p-6 lg:p-8">
+    <div className="min-h-screen text-white font-sans flex flex-col items-center p-0">
       
       {/* Header */}
-      <div className="w-full max-w-7xl mb-6 lg:mb-8 animate-fadeInUp">
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 flex items-center gap-3 drop-shadow-lg">
-            <div className="bg-gradient-to-br from-emerald-500 to-cyan-600 p-2 sm:p-3 rounded-xl shadow-xl">
-              <Hash className="w-6 h-6 sm:w-8 sm:h-8" />
-            </div>
-            Monday Night Darts
+      <div className="w-full bg-slate-900 border-b border-slate-700 px-4 py-3 mb-0">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <h1 className="text-xl sm:text-2xl font-bold text-cyan-400 flex items-center gap-2">
+            <Hash className="w-5 h-5 sm:w-6 sm:h-6" />
+            Monday Night Average App
           </h1>
-          <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-5 sm:px-6 py-2 sm:py-3 rounded-2xl border border-slate-600 shadow-xl backdrop-blur-sm">
+          <div className="bg-slate-800 px-4 py-1.5 rounded-full border border-slate-700">
             {isEditing ? (
-              <span className="text-amber-400 font-bold text-sm sm:text-base">✏️ Editing Match {editingMatchId}</span>
+              <span className="text-cyan-400 text-xs sm:text-sm">Editing Match {editingMatchId}</span>
             ) : (
-              <span className="text-emerald-400 font-bold text-sm sm:text-base">🎯 Match {matchCount}</span>
+              <span className="text-cyan-400 text-xs sm:text-sm">Current: Match {matchCount}</span>
             )}
           </div>
         </div>
+      </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 sm:gap-3 p-1 bg-slate-800/50 rounded-2xl backdrop-blur-sm shadow-xl">
+      {/* Tabs */}
+      <div className="w-full bg-slate-900 border-b border-slate-700 px-4">
+        <div className="max-w-7xl mx-auto flex gap-0">
           <button 
             onClick={() => setActiveTab('current')}
-            className={`flex-1 px-4 sm:px-6 py-3 sm:py-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 text-sm sm:text-base font-bold touch-manipulation ${
+            className={`px-4 sm:px-6 py-3 flex items-center justify-center gap-2 transition-all text-sm sm:text-base font-semibold border-b-2 ${
               activeTab === 'current' 
-                ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-500/50 scale-105' 
-                : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                ? 'bg-emerald-600 text-white border-emerald-400' 
+                : 'text-slate-400 hover:text-white border-transparent hover:bg-slate-800'
             }`}
           >
-            <Calculator size={20} className="sm:w-6 sm:h-6" /> 
-            <span className="hidden sm:inline">{isEditing ? `Edit ${editingMatchId}` : 'Current'}</span>
-            <span className="sm:hidden">Play</span>
+            <Calculator size={18} /> 
+            <span>Current</span>
           </button>
           <button 
             onClick={() => setActiveTab('history')}
-            className={`flex-1 px-4 sm:px-6 py-3 sm:py-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 text-sm sm:text-base font-bold touch-manipulation ${
+            className={`px-4 sm:px-6 py-3 flex items-center justify-center gap-2 transition-all text-sm sm:text-base font-semibold border-b-2 ${
               activeTab === 'history' 
-                ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/50 scale-105' 
-                : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                ? 'bg-emerald-600 text-white border-emerald-400' 
+                : 'text-slate-400 hover:text-white border-transparent hover:bg-slate-800'
             }`}
           >
-            <History size={20} className="sm:w-6 sm:h-6" /> 
-            <span className="hidden sm:inline">History</span>
-            <span className="sm:hidden">📜</span>
-            <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">{completedMatches.length}</span>
+            <History size={18} /> 
+            <span>History ({completedMatches.length})</span>
           </button>
           <button 
             onClick={() => setActiveTab('overall')}
-            className={`flex-1 px-4 sm:px-6 py-3 sm:py-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 text-sm sm:text-base font-bold touch-manipulation ${
+            className={`px-4 sm:px-6 py-3 flex items-center justify-center gap-2 transition-all text-sm sm:text-base font-semibold border-b-2 ${
               activeTab === 'overall' 
-                ? 'bg-gradient-to-r from-yellow-600 to-amber-500 text-white shadow-lg shadow-yellow-500/50 scale-105' 
-                : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                ? 'bg-emerald-600 text-white border-emerald-400' 
+                : 'text-slate-400 hover:text-white border-transparent hover:bg-slate-800'
             }`}
           >
-            <Trophy size={20} className="sm:w-6 sm:h-6" /> 
-            <span className="hidden sm:inline">Stats</span>
-            <span className="sm:hidden">📊</span>
+            <Trophy size={18} /> 
+            <span>Overall Stats</span>
           </button>
         </div>
       </div>
 
+      <div className="w-full max-w-7xl px-4 py-6">
+
       {/* --- Tab Content: Current Match / Editing View --- */}
       {activeTab === 'current' && (
         <>
-          <div className="w-full max-w-7xl mb-6">
+          <div className="w-full mb-6">
             {renderTable(isEditing ? editingGameData : games, false)}
           </div>
 
-          <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Grand Totals Card */}
             <div className="bg-slate-800 p-4 sm:p-5 rounded-lg border border-slate-700 shadow-xl flex flex-col justify-center">
               <h3 className="text-slate-300 uppercase text-xs sm:text-sm font-bold mb-3 tracking-wider">
@@ -1026,7 +1024,7 @@ const DartsApp = () => {
           </div>
         </div>
       )}
-
+      </div>
     </div>
   );
 };
