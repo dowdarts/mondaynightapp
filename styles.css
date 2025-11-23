@@ -584,6 +584,12 @@ td {
     border-color: #2563eb;
 }
 
+.history-header-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
 .edit-match-btn {
     background: #3b82f6;
     color: white;
@@ -598,6 +604,23 @@ td {
 
 .edit-match-btn:hover {
     background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.delete-match-btn {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 600;
+}
+
+.delete-match-btn:hover {
+    background: #b91c1c;
     transform: translateY(-1px);
 }
 

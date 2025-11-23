@@ -560,7 +560,10 @@ class DartScoreTracker {
                     <div class="history-match-container sit-out">
                         <div class="history-match-header">
                             <h3>Match ${match.match}</h3>
-                            <span class="status-badge sit-out">SIT OUT</span>
+                            <div class="history-header-buttons">
+                                <span class="status-badge sit-out">SIT OUT</span>
+                                <button class="delete-match-btn" data-match-index="${index}">🗑️ Delete</button>
+                            </div>
                         </div>
                         <p style="text-align: center; color: #9ca3af; padding: 20px;">You sat out this match</p>
                     </div>
@@ -577,6 +580,14 @@ class DartScoreTracker {
             btn.addEventListener('click', (e) => {
                 const matchIndex = parseInt(e.target.dataset.matchIndex);
                 this.showEditMatchModal(matchIndex);
+            });
+        });
+        
+        // Add event listeners for delete buttons
+        document.querySelectorAll('.delete-match-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const matchIndex = parseInt(e.target.dataset.matchIndex);
+                this.deleteMatch(matchIndex);
             });
         });
         
@@ -650,7 +661,10 @@ class DartScoreTracker {
             <div class="history-match-container">
                 <div class="history-match-header">
                     <h3>Match ${match.match}</h3>
-                    <button class="edit-match-btn" data-match-index="${matchIndex}">✏️ Edit</button>
+                    <div class="history-header-buttons">
+                        <button class="edit-match-btn" data-match-index="${matchIndex}">✏️ Edit</button>
+                        <button class="delete-match-btn" data-match-index="${matchIndex}">🗑️ Delete</button>
+                    </div>
                 </div>
                 <div class="scoring-table">
                     <table>
@@ -1247,6 +1261,26 @@ class DartScoreTracker {
         this.switchTab('current');
 
         alert('Ready for a new night! All previous data has been cleared.');
+    }
+
+    async deleteMatch(matchIndex) {
+        const match = this.matchHistory[matchIndex];
+        if (!match) return;
+        
+        const confirmed = confirm(`Delete Match ${match.match}?\n\nThis will permanently remove this match from your history. This cannot be undone.`);
+        
+        if (!confirmed) return;
+        
+        // Remove from history array
+        this.matchHistory.splice(matchIndex, 1);
+        
+        // Save to database
+        await this.saveToDatabase();
+        
+        // Update views
+        this.updateHistoryView();
+        this.updateOverallStats();
+        document.getElementById('historyCount').textContent = this.matchHistory.length;
     }
 
     async clearAllStats() {
