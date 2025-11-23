@@ -564,7 +564,18 @@ class DartScoreTracker {
     }
 
     handleFinishResult(result) {
+        // Bounds check - prevent errors if already past game 3
+        if (this.currentGame > 3) {
+            console.log('Error: handleFinishResult called when currentGame > 3');
+            return;
+        }
+        
         const finishCell = document.querySelector(`.finish[data-game="${this.currentGame}"]`);
+        
+        if (!finishCell) {
+            console.log('Error: finishCell not found for game', this.currentGame);
+            return;
+        }
         
         if (result === 'loss') {
             finishCell.textContent = '❌';

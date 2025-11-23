@@ -47,11 +47,6 @@ TO authenticated
 USING (auth.uid()::text = split_part(session_id, '_', 1))
 WITH CHECK (auth.uid()::text = split_part(session_id, '_', 1));
 
-CREATE POLICY "Users can view their own match history"
-ON match_history FOR SELECT
-TO authenticated
-USING (auth.uid()::text = split_part(session_id, '_', 1));
-
 CREATE POLICY "Users can delete their own match history"
 ON match_history FOR DELETE
 TO authenticated
