@@ -987,7 +987,14 @@ class DartScoreTracker {
                 
                 // Update the score in memory
                 this.updateHistoryScore(matchIndex, game, dartBox, numValue);
+                
+                // Update cell display with proper ton highlighting
                 cell.textContent = numValue;
+                if (numValue >= 95) {
+                    cell.classList.add('ton-score');
+                } else {
+                    cell.classList.remove('ton-score');
+                }
                 
             } else if (e.key === 'Escape') {
                 e.preventDefault();
@@ -997,14 +1004,6 @@ class DartScoreTracker {
                 }
                 cell.textContent = currentValue;
             }
-        });
-        
-        // Cancel on blur
-        input.addEventListener('blur', () => {
-            if (!cell.contains(input)) return;
-            cell.classList.remove('editing-input');
-            cell.removeChild(input);
-            cell.textContent = currentValue;
         });
     }
 
