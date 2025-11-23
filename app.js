@@ -15,67 +15,157 @@ class DartScoreTracker {
         this.matchHistory = [];
         this.userName = '';
         this.sessionDate = '';
+        this.currentUser = null;
         
-        // Show welcome screen first
-        this.showWelcomeScreen();
+        // Check if user is logged in
+        this.checkAuth();
     }
 
-    showWelcomeScreen() {
-        // Ensure DOM is ready before showing modal
-        setTimeout(() => {
-            const modal = document.createElement('div');
-            modal.className = 'finish-modal';
-            modal.id = 'welcomeModal';
+    async checkAuth() {
+        setTimeout(async () => {
+            const supabaseReady = initSupabase();
+            if (!supabaseReady) {
+                alert('Failed to initialize authentication');
+                return;
+            }
             
-            modal.innerHTML = `
-                <div class="finish-modal-content">
-                    <h2>Welcome to Monday Night Darts</h2>
-                    <p style="color: #9ca3af; margin-bottom: 20px;">Enter your name to get started</p>
-                    <div style="margin-bottom: 20px;">
-                        <input type="text" id="userNameInput" class="edit-score-input" 
-                               placeholder="Enter your name" 
-                               style="width: 100%; padding: 12px; font-size: 16px; text-align: center;">
-                    </div>
-                    <button class="finish-btn" id="startSessionBtn" style="width: 100%; background: #16a34a;">
-                        Start Session
-                    </button>
-                </div>
-            `;
+            // Check for existing session
+            const { data: { session } } = await supabase.auth.getSession();
             
-            document.body.appendChild(modal);
-            
-            const nameInput = document.getElementById('userNameInput');
-            nameInput.focus();
-            
-            // Allow Enter key to submit
-            nameInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    document.getElementById('startSessionBtn').click();
-                }
-            });
-            
-            document.getElementById('startSessionBtn').addEventListener('click', async () => {
-                const name = nameInput.value.trim();
-                if (!name) {
-                    alert('Please enter your name');
-                    return;
-                }
-                
-                this.userName = name;
-                this.sessionDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            if (session) {
+                this.currentUser = session.user;
+                this.userName = session.user.email.split('@')[0];
+                this.sessionDate = new Date().toISOString().split('T')[0];
                 this.sessionId = this.getSessionId();
-                
-                document.body.removeChild(modal);
-                
-                // Initialize Supabase and load saved data
                 await this.initializeApp();
-            });
+            } else {
+                this.showAuthScreen();
+            }
         }, 0);
     }
 
+    showAuthScreen() {
+        const modal = document.createElement('div');
+        modal.className = 'finish-modal';
+        modal.id = 'authModal';
+        
+        modal.innerHTML = `
+            <div class="finish-modal-content">
+                <h2>🎯 Monday Night Darts</h2>
+                <p style="color: #9ca3af; margin-bottom: 20px;">Login to track your scores</p>
+                <div style="margin-bottom: 15px;">
+                    <input type="email" id="authEmail" class="edit-score-input" 
+                           placeholder="Email" 
+                           style="width: 100%; padding: 12px; font-size: 16px; margin-bottom: 10px;">
+                    <input type="password" id="authPassword" class="edit-score-input" 
+                           placeholder="Password" 
+                           style="width: 100%; padding: 12px; font-size: 16px;">
+                </div>
+                <button class="finish-btn" id="loginBtn" style="width: 100%; background: #16a34a; margin-bottom: 10px;">
+                    Login
+                </button>
+                <button class="finish-btn" id="signupBtn" style="width: 100%; background: #2563eb;">
+                    Create New Account
+                </button>
+                <div id="authMessage" style="color: #ef4444; margin-top: 10px; font-size: 14px; text-align: center;"></div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const emailInput = document.getElementById('authEmail');
+        const passwordInput = document.getElementById('authPassword');
+        const messageDiv = document.getElementById('authMessage');
+        
+        emailInput.focus();
+        
+        // Allow Enter key to login
+        const handleEnter = (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('loginBtn').click();
+            }
+        };
+        
+        emailInput.addEventListener('keydown', handleEnter);
+        passwordInput.addEventListener('keydown', handleEnter);
+        
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            if (!email || !password) {
+                messageDiv.textContent = 'Please enter email and password';
+                return;
+            }
+            
+            messageDiv.textContent = 'Logging in...';
+            messageDiv.style.color = '#9ca3af';
+            
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+            
+            if (error) {
+                messageDiv.textContent = error.message;
+                messageDiv.style.color = '#ef4444';
+            } else {
+                this.currentUser = data.user;
+                this.userName = data.user.email.split('@')[0];
+                this.sessionDate = new Date().toISOString().split('T')[0];
+                this.sessionId = this.getSessionId();
+                document.body.removeChild(modal);
+                await this.initializeApp();
+            }
+        });
+        
+        document.getElementById('signupBtn').addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            if (!email || !password) {
+                messageDiv.textContent = 'Please enter email and password';
+                return;
+            }
+            
+            if (password.length < 6) {
+                messageDiv.textContent = 'Password must be at least 6 characters';
+                messageDiv.style.color = '#ef4444';
+                return;
+            }
+            
+            messageDiv.textContent = 'Creating account...';
+            messageDiv.style.color = '#9ca3af';
+            
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password
+            });
+            
+            if (error) {
+                messageDiv.textContent = error.message;
+                messageDiv.style.color = '#ef4444';
+            } else {
+                messageDiv.textContent = 'Account created! Logging you in...';
+                messageDiv.style.color = '#16a34a';
+                
+                // Auto-login after signup
+                setTimeout(async () => {
+                    this.currentUser = data.user;
+                    this.userName = data.user.email.split('@')[0];
+                    this.sessionDate = new Date().toISOString().split('T')[0];
+                    this.sessionId = this.getSessionId();
+                    document.body.removeChild(modal);
+                    await this.initializeApp();
+                }, 1000);
+            }
+        });
+    }
+
     getSessionId() {
-        // Create session ID with date and username
-        return `${this.userName}_${this.sessionDate}_${Math.random().toString(36).substr(2, 9)}`;
+        // Create session ID with user ID and date
+        const userId = this.currentUser ? this.currentUser.id : 'guest';
+        return `${userId}_${this.sessionDate}`;
     }
 
     async initializeApp() {
@@ -121,6 +211,12 @@ class DartScoreTracker {
 
         // Night Done button
         document.querySelector('.night-done').addEventListener('click', () => this.nightDone());
+        
+        // Logout button
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => this.logout());
+        }
 
         // Keyboard support
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
@@ -517,6 +613,14 @@ class DartScoreTracker {
         this.startNextMatch();
     }
 
+    async logout() {
+        const confirmLogout = confirm('Are you sure you want to logout? Your data is saved.');
+        if (!confirmLogout) return;
+        
+        await supabase.auth.signOut();
+        location.reload();
+    }
+
     nightDone() {
         const isLastMatch = this.currentMatch === 5;
         
@@ -674,6 +778,7 @@ class DartScoreTracker {
         
         // Display user info
         const userInfoEl = document.getElementById('userInfo');
+        const logoutBtn = document.getElementById('logoutBtn');
         if (userInfoEl && this.userName) {
             const date = new Date(this.sessionDate).toLocaleDateString('en-US', { 
                 weekday: 'short', 
@@ -682,6 +787,9 @@ class DartScoreTracker {
                 year: 'numeric' 
             });
             userInfoEl.textContent = `👤 ${this.userName} • 📅 ${date}`;
+            if (logoutBtn) {
+                logoutBtn.classList.remove('hidden');
+            }
         }
         
         // Update button text based on current match

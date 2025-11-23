@@ -1,5 +1,5 @@
 // Service Worker for PWA
-const CACHE_NAME = 'dart-average-v4';
+const CACHE_NAME = 'dart-average-v5';
 const urlsToCache = [
   './',
   './index.html',

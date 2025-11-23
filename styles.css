@@ -68,7 +68,39 @@ h1 {
 .user-info {
     color: #16a34a;
     font-size: 14px;
+    margin-bottom: 0;
+}
+
+.user-info-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 8px;
+}
+
+.logout-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+.logout-btn:active {
+    transform: translateY(0);
+}
+
+.logout-btn.hidden {
+    display: none;
 }
 
 .clear-stats-button {
