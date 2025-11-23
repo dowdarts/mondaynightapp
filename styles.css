@@ -457,13 +457,20 @@ td {
     cursor: pointer;
     transition: all 0.3s;
     color: white;
+    position: relative;
+}
+
+.finish-btn.selected {
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
 }
 
 .finish-btn.loss {
     background: #dc2626;
 }
 
-.finish-btn.loss:hover {
+.finish-btn.loss:hover,
+.finish-btn.loss.selected {
     background: #b91c1c;
     transform: translateY(-2px);
 }
@@ -472,7 +479,8 @@ td {
     background: #f97316;
 }
 
-.finish-btn.partner:hover {
+.finish-btn.partner:hover,
+.finish-btn.partner.selected {
     background: #ea580c;
     transform: translateY(-2px);
 }
@@ -481,7 +489,8 @@ td {
     background: #16a34a;
 }
 
-.finish-btn.win:hover {
+.finish-btn.win:hover,
+.finish-btn.win.selected {
     background: #15803d;
     transform: translateY(-2px);
 }

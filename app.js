@@ -189,23 +189,66 @@ class DartScoreTracker {
         modal.innerHTML = `
             <div class="finish-modal-content">
                 <h2>Did you finish the game?</h2>
+                <p style="color: #9ca3af; font-size: 14px; margin-bottom: 20px;">Press: <strong>1</strong> = I Finished | <strong>2</strong> = Partner | <strong>3</strong> = Loss | <strong>Enter</strong> = Confirm</p>
                 <div class="finish-options">
-                    <button class="finish-btn loss" data-result="loss">❌ Game Loss</button>
-                    <button class="finish-btn partner" data-result="partner">✓ Partner Finished</button>
-                    <button class="finish-btn win" data-result="win">✓ I Finished</button>
+                    <button class="finish-btn loss" data-result="loss" data-key="3">3️⃣ Game Loss</button>
+                    <button class="finish-btn partner" data-result="partner" data-key="2">2️⃣ Partner Finished</button>
+                    <button class="finish-btn win selected" data-result="win" data-key="1">1️⃣ I Finished</button>
                 </div>
             </div>
         `;
         document.body.appendChild(modal);
 
+        // Track selected button (default to "I Finished")
+        let selectedResult = 'win';
+        const buttons = modal.querySelectorAll('.finish-btn');
+        
+        // Function to update selection
+        const updateSelection = (result) => {
+            selectedResult = result;
+            buttons.forEach(btn => {
+                if (btn.dataset.result === result) {
+                    btn.classList.add('selected');
+                } else {
+                    btn.classList.remove('selected');
+                }
+            });
+        };
+
         // Add click handlers
-        modal.querySelectorAll('.finish-btn').forEach(btn => {
+        buttons.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const result = e.target.dataset.result;
                 this.handleFinishResult(result);
                 document.body.removeChild(modal);
+                document.removeEventListener('keydown', keyHandler);
             });
         });
+
+        // Keyboard handler
+        const keyHandler = (e) => {
+            if (e.key === '1') {
+                e.preventDefault();
+                updateSelection('win');
+            } else if (e.key === '2') {
+                e.preventDefault();
+                updateSelection('partner');
+            } else if (e.key === '3') {
+                e.preventDefault();
+                updateSelection('loss');
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                this.handleFinishResult(selectedResult);
+                document.body.removeChild(modal);
+                document.removeEventListener('keydown', keyHandler);
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                document.body.removeChild(modal);
+                document.removeEventListener('keydown', keyHandler);
+            }
+        };
+
+        document.addEventListener('keydown', keyHandler);
     }
 
     handleFinishResult(result) {
