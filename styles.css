@@ -1308,12 +1308,28 @@ td {
 .ytd-matches {
     color: #9ca3af;
     font-size: 14px;
+    text-align: center;
 }
 
 .ytd-average {
     font-weight: 700;
     font-size: 18px;
     color: #16a34a;
+    text-align: center;
+}
+
+.ytd-tons {
+    color: #f59e0b;
+    font-weight: 600;
+    font-size: 16px;
+    text-align: center;
+}
+
+.ytd-finishes {
+    color: #8b5cf6;
+    font-weight: 600;
+    font-size: 16px;
+    text-align: center;
 }
 
 .ytd-error {

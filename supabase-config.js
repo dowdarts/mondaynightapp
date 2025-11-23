@@ -146,7 +146,7 @@ const SupabaseDB = {
             
             const { data: matches, error } = await supabase
                 .from('match_history')
-                .select('session_id, status, totals, user_name, created_at')
+                .select('session_id, status, totals, user_name, my_finishes, created_at')
                 .gte('created_at', yearStart)
                 .eq('status', 'completed');
             
@@ -165,6 +165,8 @@ const SupabaseDB = {
                         userName: match.user_name || 'Unknown User',
                         totalScore: 0,
                         totalDarts: 0,
+                        totalTons: 0,
+                        totalFinishes: 0,
                         matchCount: 0
                     };
                 }
@@ -172,6 +174,8 @@ const SupabaseDB = {
                 if (match.totals) {
                     userStats[userId].totalScore += match.totals.score || 0;
                     userStats[userId].totalDarts += match.totals.darts || 0;
+                    userStats[userId].totalTons += match.totals.tons || 0;
+                    userStats[userId].totalFinishes += match.my_finishes || 0;
                     userStats[userId].matchCount += 1;
                 }
             }
@@ -186,7 +190,9 @@ const SupabaseDB = {
                     userId: stats.userId,
                     userName: stats.userName,
                     matchCount: stats.matchCount,
-                    average: parseFloat(average)
+                    average: parseFloat(average),
+                    tons: stats.totalTons,
+                    finishes: stats.totalFinishes
                 };
             });
             

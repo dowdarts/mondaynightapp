@@ -1013,6 +1013,8 @@ class DartScoreTracker {
                             <th>Name</th>
                             <th>Matches</th>
                             <th>Average</th>
+                            <th>Tons</th>
+                            <th>Finishes</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1041,8 +1043,10 @@ class DartScoreTracker {
                 <tr ${rowClass}>
                     <td class="${rankClass}">${rankDisplay}</td>
                     <td class="ytd-name">${user.userName}${isCurrentUser ? ' (You)' : ''}</td>
-                    <td class="ytd-matches">${user.matchCount} matches</td>
+                    <td class="ytd-matches">${user.matchCount}</td>
                     <td class="ytd-average">${user.average}</td>
+                    <td class="ytd-tons">${user.tons}</td>
+                    <td class="ytd-finishes">${user.finishes}</td>
                 </tr>
             `;
         });
