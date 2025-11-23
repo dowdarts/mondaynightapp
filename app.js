@@ -867,7 +867,6 @@ class DartScoreTracker {
 
     proceedToNextMatch(isLastMatch) {
         this.matchComplete = true;
-        this.calculateMatchTotals();
         this.clearHighlight();
         
         // Count finishes
