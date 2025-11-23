@@ -135,62 +135,81 @@ const SupabaseDB = {
         return { error };
     },
 
-    // Get Year to Date leaderboard with all users' stats
+    // Save nightly stats
+    async saveNightlyStats(nightlyData) {
+        if (!supabase) return { error: 'Supabase not initialized' };
+        
+        const { data, error } = await supabase
+            .from('nightly_stats')
+            .upsert({
+                session_date: nightlyData.session_date,
+                user_id: nightlyData.user_id,
+                user_name: nightlyData.user_name,
+                total_matches: nightlyData.total_matches,
+                total_score: nightlyData.total_score,
+                total_darts: nightlyData.total_darts,
+                total_tons: nightlyData.total_tons,
+                total_finishes: nightlyData.total_finishes,
+                avg_score: nightlyData.avg_score,
+                created_at: new Date().toISOString()
+            }, { onConflict: 'user_id,session_date' });
+        
+        return { data, error };
+    },
+
+    // Get Year to Date leaderboard from nightly_stats
     async getYTDLeaderboard() {
         if (!supabase) return { error: 'Supabase not initialized' };
         
         try {
-            // Get all match history from this year
+            // Get all nightly stats from this year
             const currentYear = new Date().getFullYear();
             const yearStart = `${currentYear}-01-01`;
             
-            const { data: matches, error } = await supabase
-                .from('match_history')
-                .select('session_id, status, totals, user_name, my_finishes, created_at')
-                .gte('created_at', yearStart)
-                .eq('status', 'completed');
+            const { data: nightlyStats, error } = await supabase
+                .from('nightly_stats')
+                .select('*')
+                .gte('session_date', yearStart);
             
             if (error) return { data: null, error };
             
-            // Group by user (extract user_id from session_id)
+            // Group by user
             const userStats = {};
             
-            for (const match of matches) {
-                // session_id format: userId_date
-                const userId = match.session_id.split('_')[0];
-                
-                if (!userStats[userId]) {
-                    userStats[userId] = {
-                        userId,
-                        userName: match.user_name || 'Unknown User',
+            for (const night of nightlyStats) {
+                if (!userStats[night.user_id]) {
+                    userStats[night.user_id] = {
+                        userId: night.user_id,
+                        userName: night.user_name,
                         totalScore: 0,
                         totalDarts: 0,
                         totalTons: 0,
                         totalFinishes: 0,
-                        matchCount: 0
+                        nightsPlayed: 0,
+                        avgScores: []
                     };
                 }
                 
-                if (match.totals) {
-                    userStats[userId].totalScore += match.totals.score || 0;
-                    userStats[userId].totalDarts += match.totals.darts || 0;
-                    userStats[userId].totalTons += match.totals.tons || 0;
-                    userStats[userId].totalFinishes += match.my_finishes || 0;
-                    userStats[userId].matchCount += 1;
-                }
+                userStats[night.user_id].totalScore += night.total_score || 0;
+                userStats[night.user_id].totalDarts += night.total_darts || 0;
+                userStats[night.user_id].totalTons += night.total_tons || 0;
+                userStats[night.user_id].totalFinishes += night.total_finishes || 0;
+                userStats[night.user_id].nightsPlayed += 1;
+                userStats[night.user_id].avgScores.push(night.avg_score || 0);
             }
             
             // Build leaderboard
             const leaderboard = Object.values(userStats).map(stats => {
-                const average = stats.totalDarts > 0 
-                    ? (stats.totalScore / stats.totalDarts * 3).toFixed(2)
-                    : '0.00';
+                // Calculate overall average from all nights
+                const overallAvg = stats.totalDarts > 0 
+                    ? parseFloat((stats.totalScore / stats.totalDarts).toFixed(2))
+                    : 0.00;
                 
                 return {
                     userId: stats.userId,
                     userName: stats.userName,
-                    matchCount: stats.matchCount,
-                    average: parseFloat(average),
+                    nightsPlayed: stats.nightsPlayed,
+                    average: overallAvg,
                     tons: stats.totalTons,
                     finishes: stats.totalFinishes
                 };
@@ -206,3 +225,8 @@ const SupabaseDB = {
         }
     }
 };
+
+// Global helper functions
+async function saveNightlyStats(nightlyData) {
+    return await SupabaseDB.saveNightlyStats(nightlyData);
+}
