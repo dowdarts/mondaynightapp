@@ -1,5 +1,6 @@
 -- Supabase Database Setup for Dart League Scoring App
 -- Run this SQL in your Supabase SQL Editor
+-- Note: This is PostgreSQL syntax, not MS SQL Server
 
 -- Create dart_sessions table
 CREATE TABLE IF NOT EXISTS dart_sessions (
