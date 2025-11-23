@@ -96,6 +96,11 @@ class DartScoreTracker {
     }
 
     handleKeyboard(e) {
+        // Don't handle keyboard if a modal is open
+        if (document.querySelector('.finish-modal')) {
+            return;
+        }
+        
         // Prevent default for keys we're handling
         if (['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key)) {
             e.preventDefault();
