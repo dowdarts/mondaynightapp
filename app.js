@@ -272,6 +272,9 @@ class DartScoreTracker {
             messageDiv.textContent = 'Creating account...';
             messageDiv.style.color = '#9ca3af';
             
+            // Get the full URL including any subdirectory
+            const redirectUrl = window.location.href.split('?')[0].split('#')[0];
+            
             const { data, error } = await supabase.auth.signUp({
                 email: email,
                 password: password,
@@ -280,7 +283,7 @@ class DartScoreTracker {
                         first_name: firstName,
                         last_name: lastName
                     },
-                    emailRedirectTo: `${window.location.origin}${window.location.pathname}`
+                    emailRedirectTo: redirectUrl
                 }
             });
             
@@ -356,8 +359,11 @@ class DartScoreTracker {
             messageDiv.textContent = 'Sending reset link...';
             messageDiv.style.color = '#9ca3af';
             
+            // Get the full URL including any subdirectory
+            const redirectUrl = window.location.href.split('?')[0].split('#')[0];
+            
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}${window.location.pathname}`
+                redirectTo: redirectUrl
             });
             
             if (error) {
