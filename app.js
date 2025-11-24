@@ -1993,23 +1993,39 @@ class DartScoreTracker {
         let totalMyFinishes = 0;
 
         console.log('Collecting stats from matches:', this.matchHistory.length);
-        this.matchHistory.forEach(match => {
-            console.log(`Match ${match.match}: ${match.status}, Score: ${match.totals?.score}, Darts: ${match.totals?.darts}`);
+        this.matchHistory.forEach((match, index) => {
+            console.log(`Match ${index + 1}:`, {
+                matchNumber: match.match,
+                status: match.status,
+                hasTotals: !!match.totals,
+                totals: match.totals
+            });
+            
             if (match.status !== 'sit-out' && match.totals) {
                 totalCompleted++;
                 cumulativeScore += parseInt(match.totals.score) || 0;
                 cumulativeDarts += parseInt(match.totals.darts) || 0;
                 totalTons += parseInt(match.totals.tons) || 0;
                 totalMyFinishes += match.myFinishes || 0;
+            } else if (match.status !== 'sit-out' && !match.totals) {
+                console.warn(`⚠️ Match ${match.match} is missing totals object!`);
             }
         });
 
         console.log(`Totals: ${totalCompleted} matches, ${cumulativeScore} score, ${cumulativeDarts} darts`);
         const overallAvg = cumulativeDarts > 0 ? (cumulativeScore / cumulativeDarts).toFixed(2) : '0.00';
 
-        // Save to nightly_stats table
+        // Save to database
         if (supabase && this.currentUser) {
             try {
+                // First save all match history to match_history table
+                console.log('💾 Saving match history to database...');
+                if (this.matchHistory.length > 0) {
+                    await SupabaseDB.saveMatchHistory(this.sessionId, this.matchHistory, this.userName);
+                    console.log('✅ Match history saved to database');
+                }
+                
+                // Then save aggregated stats to nightly_stats table
                 const nightlyData = {
                     session_date: this.sessionDate,
                     user_id: this.currentUser.id,
@@ -2022,9 +2038,9 @@ class DartScoreTracker {
                     avg_score: parseFloat(overallAvg)
                 };
 
-                console.log('Saving nightly stats with session_date:', this.sessionDate, 'session_id:', this.sessionId);
+                console.log('💾 Saving nightly stats with session_date:', this.sessionDate, 'session_id:', this.sessionId);
                 await SupabaseDB.saveNightlyStats(nightlyData);
-                console.log('✅ Session saved to nightly_stats table');
+                console.log('✅ Nightly stats saved to database');
                 
                 // Show success and reset
                 this.showSuccessAndReset(totalCompleted, cumulativeScore, cumulativeDarts, overallAvg, totalMyFinishes);
