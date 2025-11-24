@@ -31,41 +31,12 @@ class DartScoreTracker {
                 return;
             }
             
-            console.log('🔍 Full URL:', window.location.href);
-            console.log('🔍 Hash:', window.location.hash);
-            console.log('🔍 Search:', window.location.search);
-            
-            // First, let Supabase handle any auth callbacks (this processes the OAuth flow)
+            // Check for existing session
             const { data: { session }, error: sessionError } = await supabase.auth.getSession();
             
             if (sessionError) {
                 console.error('❌ Session error:', sessionError);
             }
-            
-            // Now check if this is a password recovery callback
-            // Check hash params
-            let hashParams = new URLSearchParams(window.location.hash.substring(1));
-            let type = hashParams.get('type');
-            
-            // Check query params if not in hash
-            if (!type) {
-                const queryParams = new URLSearchParams(window.location.search);
-                type = queryParams.get('type');
-            }
-            
-            console.log('🔍 Auth type detected:', type);
-            console.log('🔍 Session exists:', !!session);
-            
-            // If type is recovery, show password update form
-            if (type === 'recovery') {
-                console.log('✅ Password recovery detected - showing update form');
-                // Clear the URL to remove the parameters
-                window.history.replaceState(null, '', window.location.pathname);
-                this.showPasswordUpdateForm();
-                return;
-            }
-            
-            // Check for existing session
             
             if (session) {
                 this.currentUser = session.user;
