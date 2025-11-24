@@ -201,56 +201,49 @@ const SupabaseDB = {
         return await this.loadMatchHistory(sessionId);
     },
 
-    // Get Year to Date leaderboard from match_history
-    // This aggregates all individual matches for accurate YTD totals
+    // Get Year to Date leaderboard from nightly_stats
+    // This aggregates all saved sessions for accurate YTD totals
     async getYTDLeaderboard() {
         if (!supabase) return { error: 'Supabase not initialized' };
         
         try {
-            // Get all match history from this year
+            // Get all nightly stats from this year
             const currentYear = new Date().getFullYear();
             const yearStart = `${currentYear}-01-01`;
             
-            const { data: matches, error } = await supabase
-                .from('match_history')
+            const { data: sessions, error } = await supabase
+                .from('nightly_stats')
                 .select('*')
-                .gte('created_at', yearStart);
+                .gte('session_date', yearStart);
             
             if (error) return { data: null, error };
             
-            console.log(`📊 YTD Leaderboard: Found ${matches?.length || 0} matches from ${currentYear}`);
+            console.log(`📊 YTD Leaderboard: Found ${sessions?.length || 0} saved sessions from ${currentYear}`);
             
-            // Group by user - extract user_id from session_id (format: userId_YYYY-MM-DD)
+            // Group by user
             const userStats = {};
-            const sessionDates = {}; // Track unique session dates per user
             
-            for (const match of matches) {
-                // Skip sit-out matches
-                if (match.status === 'sit-out') continue;
-                
-                // Extract user_id from session_id (format: userId_YYYY-MM-DD)
-                const userId = match.session_id.split('_')[0];
+            for (const session of sessions) {
+                const userId = session.user_id;
                 
                 if (!userStats[userId]) {
                     userStats[userId] = {
                         userId: userId,
-                        userName: match.user_name,
+                        userName: session.user_name,
                         totalScore: 0,
                         totalDarts: 0,
                         totalTons: 0,
-                        totalFinishes: 0
+                        totalFinishes: 0,
+                        nightsPlayed: 0
                     };
-                    sessionDates[userId] = new Set();
                 }
                 
-                // Add match totals
-                userStats[userId].totalScore += match.totals?.score || 0;
-                userStats[userId].totalDarts += match.totals?.darts || 0;
-                userStats[userId].totalTons += match.totals?.tons || 0;
-                userStats[userId].totalFinishes += match.my_finishes || 0;
-                
-                // Track unique session dates
-                sessionDates[userId].add(match.session_id);
+                // Add session totals
+                userStats[userId].totalScore += session.total_score || 0;
+                userStats[userId].totalDarts += session.total_darts || 0;
+                userStats[userId].totalTons += session.total_tons || 0;
+                userStats[userId].totalFinishes += session.total_finishes || 0;
+                userStats[userId].nightsPlayed += 1;
             }
             
             // Build leaderboard
@@ -263,7 +256,7 @@ const SupabaseDB = {
                 return {
                     userId: stats.userId,
                     userName: stats.userName,
-                    nightsPlayed: sessionDates[stats.userId].size,
+                    nightsPlayed: stats.nightsPlayed,
                     totalScore: stats.totalScore,
                     totalDarts: stats.totalDarts,
                     average: overallAvg,
