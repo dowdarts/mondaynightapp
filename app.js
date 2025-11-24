@@ -1050,6 +1050,13 @@ class DartScoreTracker {
             document.getElementById('historyTab').classList.add('active');
             document.querySelector('[data-tab="history"]').classList.add('active');
             this.populateSessionDateDropdown();
+            
+            // Reset dropdown to current session
+            const sessionSelect = document.getElementById('sessionDateSelect');
+            if (sessionSelect) {
+                sessionSelect.value = 'current';
+            }
+            
             this.updateHistoryView();
         } else if (tabName === 'stats') {
             document.getElementById('statsTab').classList.add('active');
