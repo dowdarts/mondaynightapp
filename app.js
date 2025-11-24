@@ -73,6 +73,9 @@ class DartScoreTracker {
                 <button class="finish-btn" id="resendVerificationBtn" style="width: 100%; background: #f59e0b; margin-top: 10px; font-size: 13px;">
                     📧 Resend Verification Email
                 </button>
+                <button id="forgotPasswordBtn" style="background: none; border: none; color: #2563eb; cursor: pointer; text-decoration: underline; font-size: 14px; width: 100%; margin-top: 10px;">
+                    🔑 Forgot Password?
+                </button>
                 <div id="authMessage" style="color: #ef4444; margin-top: 10px; font-size: 14px; text-align: center;"></div>
             </div>
         `;
@@ -138,6 +141,11 @@ class DartScoreTracker {
         document.getElementById('signupBtn').addEventListener('click', () => {
             document.body.removeChild(modal);
             this.showSignupForm();
+        });
+        
+        document.getElementById('forgotPasswordBtn').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            this.showForgotPasswordForm();
         });
         
         document.getElementById('resendVerificationBtn').addEventListener('click', async () => {
@@ -293,6 +301,79 @@ class DartScoreTracker {
         });
         
         document.getElementById('backToLoginBtn').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            this.showAuthScreen();
+        });
+    }
+
+    showForgotPasswordForm() {
+        const modal = document.createElement('div');
+        modal.className = 'finish-modal';
+        modal.id = 'forgotPasswordModal';
+        
+        modal.innerHTML = `
+            <div class="finish-modal-content">
+                <h2>🔑 Reset Password</h2>
+                <p style="color: #9ca3af; margin-bottom: 20px;">Enter your email address and we'll send you a password reset link</p>
+                <div style="margin-bottom: 15px;">
+                    <input type="email" id="resetEmail" class="edit-score-input" 
+                           placeholder="Email" 
+                           style="width: 100%; padding: 12px; font-size: 16px;">
+                </div>
+                <button class="finish-btn" id="sendResetLinkBtn" style="width: 100%; background: #2563eb; margin-bottom: 10px;">
+                    Send Reset Link
+                </button>
+                <button class="finish-btn" id="backToLoginFromResetBtn" style="width: 100%; background: #64748b;">
+                    Back to Login
+                </button>
+                <div id="resetMessage" style="color: #ef4444; margin-top: 10px; font-size: 14px; text-align: center;"></div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const emailInput = document.getElementById('resetEmail');
+        const messageDiv = document.getElementById('resetMessage');
+        
+        emailInput.focus();
+        
+        // Allow Enter key to submit
+        emailInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('sendResetLinkBtn').click();
+            }
+        });
+        
+        document.getElementById('sendResetLinkBtn').addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            
+            if (!email) {
+                messageDiv.textContent = 'Please enter your email address';
+                messageDiv.style.color = '#ef4444';
+                return;
+            }
+            
+            messageDiv.textContent = 'Sending reset link...';
+            messageDiv.style.color = '#9ca3af';
+            
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + '/reset-password.html'
+            });
+            
+            if (error) {
+                messageDiv.textContent = error.message;
+                messageDiv.style.color = '#ef4444';
+            } else {
+                messageDiv.innerHTML = '✅ Password reset link sent!<br>Check your email inbox and click the link to reset your password.';
+                messageDiv.style.color = '#16a34a';
+                
+                // Disable the button after sending
+                document.getElementById('sendResetLinkBtn').disabled = true;
+                document.getElementById('sendResetLinkBtn').style.opacity = '0.5';
+            }
+        });
+        
+        document.getElementById('backToLoginFromResetBtn').addEventListener('click', () => {
             document.body.removeChild(modal);
             this.showAuthScreen();
         });
