@@ -1077,10 +1077,12 @@ class DartScoreTracker {
     }
 
     async updateYTDView() {
+        console.log('🏆 updateYTDView() called');
         const ytdContent = document.getElementById('ytdContent');
         ytdContent.innerHTML = '<div class="ytd-loading">Loading leaderboard...</div>';
         
         const { data: leaderboard, error } = await SupabaseDB.getYTDLeaderboard();
+        console.log('🏆 YTD leaderboard data received:', leaderboard?.length || 0, 'entries');
         
         if (error) {
             ytdContent.innerHTML = '<div class="ytd-error">Failed to load leaderboard. Please try again.</div>';
@@ -1154,12 +1156,14 @@ class DartScoreTracker {
     }
 
     async populateSessionDateDropdown() {
+        console.log('📅 populateSessionDateDropdown() called');
         if (!supabase || !this.currentUser) {
             console.log('⚠️ Cannot populate dropdown: supabase or currentUser not ready');
             return;
         }
         
         const { data: dates, error } = await SupabaseDB.getUserSessionDates(this.currentUser.id);
+        console.log('📅 Session dates received:', dates?.length || 0, 'dates');
         
         if (error) {
             console.error('Error loading session dates:', error);
