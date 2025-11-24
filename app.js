@@ -1219,9 +1219,15 @@ class DartScoreTracker {
             .select('*')
             .eq('user_id', this.currentUser.id)
             .eq('session_date', sessionDate)
-            .single();
+            .maybeSingle();
         
-        if (error || !data) {
+        if (error) {
+            console.error('Error loading session summary:', error);
+            historyContent.innerHTML = '<p class="empty-message">Error loading session data.</p>';
+            return;
+        }
+        
+        if (!data) {
             historyContent.innerHTML = '<p class="empty-message">No data found for this session.</p>';
             return;
         }

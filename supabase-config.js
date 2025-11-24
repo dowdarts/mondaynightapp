@@ -53,7 +53,7 @@ const SupabaseDB = {
             .from('dart_sessions')
             .select('*')
             .eq('id', sessionId)
-            .single();
+            .maybeSingle();
         
         return { data, error };
     },
