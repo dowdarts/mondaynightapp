@@ -1994,8 +1994,8 @@ class DartScoreTracker {
 
         console.log('Collecting stats from matches:', this.matchHistory.length);
         this.matchHistory.forEach(match => {
-            console.log(`Match ${match.match}: ${match.status}, Score: ${match.totals.score}, Darts: ${match.totals.darts}`);
-            if (match.status !== 'sit-out') {
+            console.log(`Match ${match.match}: ${match.status}, Score: ${match.totals?.score}, Darts: ${match.totals?.darts}`);
+            if (match.status !== 'sit-out' && match.totals) {
                 totalCompleted++;
                 cumulativeScore += parseInt(match.totals.score) || 0;
                 cumulativeDarts += parseInt(match.totals.darts) || 0;
