@@ -411,9 +411,23 @@ class DartScoreTracker {
     }
 
     showPasswordUpdateForm() {
+        console.log('🔐 Showing password update form');
+        
+        // Remove any existing auth modals first
+        const existingAuthModal = document.getElementById('authModal');
+        if (existingAuthModal) {
+            existingAuthModal.remove();
+        }
+        const existingPasswordModal = document.getElementById('passwordUpdateModal');
+        if (existingPasswordModal) {
+            existingPasswordModal.remove();
+        }
+        
         const modal = document.createElement('div');
         modal.className = 'finish-modal';
         modal.id = 'passwordUpdateModal';
+        modal.style.display = 'flex'; // Force display
+        modal.style.zIndex = '10000'; // Ensure it's on top
         
         modal.innerHTML = `
             <div class="finish-modal-content">
