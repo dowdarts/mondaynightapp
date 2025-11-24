@@ -159,7 +159,7 @@ const SupabaseDB = {
                 total_finishes: nightlyData.total_finishes,
                 avg_score: nightlyData.avg_score,
                 created_at: new Date().toISOString()
-            }, { onConflict: 'user_id,session_date' });
+            }, { onConflict: 'session_date' });
         
         return { data, error };
     },
@@ -193,11 +193,11 @@ const SupabaseDB = {
         }
     },
 
-    // Load match history for a specific session date
-    async loadMatchHistoryByDate(userId, sessionDate) {
+    // Load match history for a specific session ID (which includes timestamp)
+    async loadMatchHistoryByDate(userId, sessionId) {
         if (!supabase) return { error: 'Supabase not initialized' };
         
-        const sessionId = `${userId}_${sessionDate}`;
+        // sessionId is now the full unique identifier with timestamp
         return await this.loadMatchHistory(sessionId);
     },
 

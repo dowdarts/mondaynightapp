@@ -15,7 +15,9 @@ class DartScoreTracker {
         this.matchHistory = [];
         this.userName = '';
         this.sessionDate = '';
+        this.sessionStartTime = null;
         this.currentUser = null;
+        this.ytdRefreshInterval = null;
         
         // Check if user is logged in
         this.checkAuth();
@@ -39,7 +41,9 @@ class DartScoreTracker {
                     ? `${metadata.first_name} ${metadata.last_name}`
                     : session.user.email.split('@')[0];
                 this.sessionDate = new Date().toISOString().split('T')[0];
+                this.sessionStartTime = new Date().toISOString();
                 this.sessionId = this.getSessionId();
+                console.log('🎯 New session started:', this.sessionId);
                 await this.initializeApp();
             } else {
                 this.showAuthScreen();
@@ -380,9 +384,10 @@ class DartScoreTracker {
     }
 
     getSessionId() {
-        // Create session ID with user ID and date
+        // Create session ID with user ID, date, and timestamp for uniqueness
         const userId = this.currentUser ? this.currentUser.id : 'guest';
-        return `${userId}_${this.sessionDate}`;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+        return `${userId}_${timestamp}`;
     }
 
     async initializeApp() {
@@ -1154,16 +1159,39 @@ class DartScoreTracker {
             document.getElementById('ytdTab').classList.add('active');
             document.querySelector('[data-tab="ytd"]').classList.add('active');
             this.updateYTDView();
+            
+            // Auto-refresh YTD leaderboard every 10 seconds while tab is active
+            if (this.ytdRefreshInterval) {
+                clearInterval(this.ytdRefreshInterval);
+            }
+            this.ytdRefreshInterval = setInterval(() => {
+                // Only refresh if YTD tab is still active
+                if (document.getElementById('ytdTab').classList.contains('active')) {
+                    this.updateYTDView(true);
+                }
+            }, 10000);
+        }
+        
+        // Clear refresh interval when switching away from YTD tab
+        if (tabName !== 'ytd' && this.ytdRefreshInterval) {
+            clearInterval(this.ytdRefreshInterval);
+            this.ytdRefreshInterval = null;
         }
     }
 
-    async updateYTDView() {
-        console.log('🏆 updateYTDView() called');
+    async updateYTDView(autoRefresh = false) {
+        if (!autoRefresh) {
+            console.log('🏆 updateYTDView() called');
+        }
         const ytdContent = document.getElementById('ytdContent');
-        ytdContent.innerHTML = '<div class="ytd-loading">Loading leaderboard...</div>';
+        if (!autoRefresh) {
+            ytdContent.innerHTML = '<div class="ytd-loading">Loading leaderboard...</div>';
+        }
         
         const { data: leaderboard, error } = await SupabaseDB.getYTDLeaderboard();
-        console.log('🏆 YTD leaderboard data received:', leaderboard?.length || 0, 'entries');
+        if (!autoRefresh) {
+            console.log('🏆 YTD leaderboard data received:', leaderboard?.length || 0, 'entries');
+        }
         
         if (error) {
             ytdContent.innerHTML = '<div class="ytd-error">Failed to load leaderboard. Please try again.</div>';
@@ -1268,16 +1296,35 @@ class DartScoreTracker {
         select.innerHTML = '<option value="current">Current Session (In Progress)</option>';
         
         // Add ALL past session dates for this user
-        dates.forEach(date => {
-            const dateObj = new Date(date);
-            const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        dates.forEach(sessionId => {
+            // Parse sessionId format: userId_YYYY-MM-DDTHH-MM-SS
+            // Extract the timestamp part after the last underscore
+            const parts = sessionId.split('_');
+            const timestamp = parts[parts.length - 1];
+            
+            // Convert timestamp format back to ISO for parsing
+            const isoTimestamp = timestamp.replace(/-/g, (match, offset) => {
+                // First two hyphens are date separators, keep them
+                // Remaining hyphens replace : and .
+                const dashCount = timestamp.substring(0, offset).split('-').length - 1;
+                if (dashCount < 2) return '-';
+                if (dashCount === 2) return 'T';
+                return ':';
+            });
+            
+            const dateObj = new Date(isoTimestamp);
+            const formattedDate = dateObj.toLocaleString('en-US', { 
                 weekday: 'short', 
                 month: 'short', 
                 day: 'numeric', 
-                year: 'numeric' 
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
             });
+            
             const option = document.createElement('option');
-            option.value = date;
+            option.value = sessionId;
             option.textContent = formattedDate;
             select.appendChild(option);
         });
@@ -1304,13 +1351,12 @@ class DartScoreTracker {
         }
     }
 
-    async displaySessionSummary(sessionDate, historyContent) {
-        // Fetch aggregated stats from nightly_stats
+    async displaySessionSummary(sessionId, historyContent) {
+        // Fetch aggregated stats from nightly_stats using sessionId
         const { data, error } = await supabase
             .from('nightly_stats')
             .select('*')
-            .eq('user_id', this.currentUser.id)
-            .eq('session_date', sessionDate)
+            .eq('session_date', sessionId)
             .maybeSingle();
         
         if (error) {
@@ -1324,12 +1370,25 @@ class DartScoreTracker {
             return;
         }
         
-        const dateObj = new Date(sessionDate);
-        const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        // Parse sessionId to extract timestamp: userId_YYYY-MM-DDTHH-MM-SS
+        const parts = sessionId.split('_');
+        const timestamp = parts[parts.length - 1];
+        const isoTimestamp = timestamp.replace(/-/g, (match, offset) => {
+            const dashCount = timestamp.substring(0, offset).split('-').length - 1;
+            if (dashCount < 2) return '-';
+            if (dashCount === 2) return 'T';
+            return ':';
+        });
+        
+        const dateObj = new Date(isoTimestamp);
+        const formattedDate = dateObj.toLocaleString('en-US', { 
             weekday: 'long', 
             month: 'long', 
             day: 'numeric', 
-            year: 'numeric' 
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
         });
         
         historyContent.innerHTML = `
@@ -1371,21 +1430,34 @@ class DartScoreTracker {
         `;
     }
 
-    async displayHistoricalMatches(matches, sessionDate) {
+    async displayHistoricalMatches(matches, sessionId) {
         const historyContent = document.getElementById('historyContent');
         
         if (matches.length === 0) {
             // No individual matches found - show aggregated stats from nightly_stats instead
-            await this.displaySessionSummary(sessionDate, historyContent);
+            await this.displaySessionSummary(sessionId, historyContent);
             return;
         }
 
-        const dateObj = new Date(sessionDate);
-        const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        // Parse sessionId to extract timestamp: userId_YYYY-MM-DDTHH-MM-SS
+        const parts = sessionId.split('_');
+        const timestamp = parts[parts.length - 1];
+        const isoTimestamp = timestamp.replace(/-/g, (match, offset) => {
+            const dashCount = timestamp.substring(0, offset).split('-').length - 1;
+            if (dashCount < 2) return '-';
+            if (dashCount === 2) return 'T';
+            return ':';
+        });
+        
+        const dateObj = new Date(isoTimestamp);
+        const formattedDate = dateObj.toLocaleString('en-US', { 
             weekday: 'long', 
             month: 'long', 
             day: 'numeric', 
-            year: 'numeric' 
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
         });
 
         let html = `<div style="background: #1e293b; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; color: #9ca3af;">
@@ -2138,8 +2210,9 @@ class DartScoreTracker {
                 }
                 
                 // Then save aggregated stats to nightly_stats table
+                // Use sessionId as session_date to ensure uniqueness (includes timestamp)
                 const nightlyData = {
-                    session_date: this.sessionDate,
+                    session_date: this.sessionId,
                     user_id: this.currentUser.id,
                     user_name: this.userName,
                     total_matches: totalCompleted,
@@ -2150,9 +2223,13 @@ class DartScoreTracker {
                     avg_score: parseFloat(overallAvg)
                 };
 
-                console.log('💾 Saving nightly stats with session_date:', this.sessionDate, 'session_id:', this.sessionId);
+                console.log('💾 Saving nightly stats with unique session_id:', this.sessionId);
                 await SupabaseDB.saveNightlyStats(nightlyData);
                 console.log('✅ Nightly stats saved to database');
+                
+                // Generate new unique session ID for next session
+                this.sessionId = this.getSessionId();
+                console.log('🆕 New session ID generated:', this.sessionId);
                 
                 // Show success and reset
                 this.showSuccessAndReset(totalCompleted, cumulativeScore, cumulativeDarts, overallAvg, totalMyFinishes);
@@ -2225,16 +2302,52 @@ class DartScoreTracker {
 
     async startNewNight() {
         // Clear current session state from database, keep all match_history and nightly_stats
-        // This creates a new session for another 5 matches
         if (supabase) {
             await SupabaseDB.clearSession(this.sessionId);
         }
 
-        // Clear local storage to force new session ID on reload
-        localStorage.removeItem('dart_session_id');
+        // Generate new unique session ID with current timestamp
+        this.sessionStartTime = new Date().toISOString();
+        this.sessionId = this.getSessionId();
+        console.log('🆕 Starting new session:', this.sessionId);
         
-        // Reload the page to create a fresh session (5 new matches)
-        window.location.reload();
+        // Reset all app state
+        this.currentMatch = 1;
+        this.currentGame = 1;
+        this.currentDartBox = 3;
+        this.currentInput = '';
+        this.matchComplete = false;
+        this.matchHistory = [];
+        
+        this.gameData = {
+            1: { scores: [], totalScore: 0, totalDarts: 0, tons: 0, finish: '', avg: 0 },
+            2: { scores: [], totalScore: 0, totalDarts: 0, tons: 0, finish: '', avg: 0 },
+            3: { scores: [], totalScore: 0, totalDarts: 0, tons: 0, finish: '', avg: 0 }
+        };
+
+        // Clear all UI
+        document.querySelectorAll('.dart-cell').forEach(cell => {
+            cell.textContent = '';
+            cell.classList.remove('filled', 'end-marker', 'active', 'high-score', 'scratched');
+        });
+
+        for (let game = 1; game <= 3; game++) {
+            document.querySelector(`.score[data-game="${game}"]`).textContent = '0';
+            document.querySelector(`.darts[data-game="${game}"]`).textContent = '-';
+            document.querySelector(`.tons[data-game="${game}"]`).textContent = '0';
+            document.querySelector(`.finish[data-game="${game}"]`).textContent = '';
+            document.querySelector(`.avg[data-game="${game}"]`).textContent = '0';
+        }
+
+        document.getElementById('totalScore').textContent = '0';
+        document.getElementById('totalDarts').textContent = '0';
+        document.getElementById('dartAvg').textContent = '0.00';
+
+        this.updateMatchDisplay();
+        this.highlightCurrentCell();
+        
+        // Switch to current tab
+        this.switchTab('current');
     }
 
     async resetForNewNight() {
