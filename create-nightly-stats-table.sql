@@ -1,3 +1,4 @@
+-- PostgreSQL script for Supabase
 -- Create nightly_stats table for storing end-of-night statistics
 CREATE TABLE IF NOT EXISTS nightly_stats (
     id BIGSERIAL PRIMARY KEY,

@@ -1,3 +1,4 @@
+-- PostgreSQL script for Supabase
 -- Fix match_history table schema to add missing user_name column
 ALTER TABLE match_history 
 ADD COLUMN IF NOT EXISTS user_name TEXT;
