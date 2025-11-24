@@ -378,10 +378,13 @@ class DartScoreTracker {
             
             // Get the full URL including any subdirectory
             const redirectUrl = window.location.href.split('?')[0].split('#')[0];
+            console.log('🔗 Password reset redirect URL:', redirectUrl);
             
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
                 redirectTo: redirectUrl
             });
+            
+            console.log('📧 Password reset email result:', error ? 'Error: ' + error.message : 'Success');
             
             if (error) {
                 messageDiv.textContent = error.message;
