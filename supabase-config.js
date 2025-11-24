@@ -255,7 +255,7 @@ const SupabaseDB = {
             
             // Build leaderboard
             const leaderboard = Object.values(userStats).map(stats => {
-                // Calculate overall average from all matches
+                // Calculate true average from total score / total darts across ALL sessions
                 const overallAvg = stats.totalDarts > 0 
                     ? parseFloat((stats.totalScore / stats.totalDarts).toFixed(2))
                     : 0.00;
@@ -264,6 +264,8 @@ const SupabaseDB = {
                     userId: stats.userId,
                     userName: stats.userName,
                     nightsPlayed: sessionDates[stats.userId].size,
+                    totalScore: stats.totalScore,
+                    totalDarts: stats.totalDarts,
                     average: overallAvg,
                     tons: stats.totalTons,
                     finishes: stats.totalFinishes

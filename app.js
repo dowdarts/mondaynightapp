@@ -1087,6 +1087,8 @@ class DartScoreTracker {
                             <th>Rank</th>
                             <th>Name</th>
                             <th>Nights</th>
+                            <th>Total Score</th>
+                            <th>Total Darts</th>
                             <th>Average</th>
                             <th>Tons</th>
                             <th>Finishes</th>
@@ -1119,6 +1121,8 @@ class DartScoreTracker {
                     <td class="${rankClass}">${rankDisplay}</td>
                     <td class="ytd-name">${user.userName}${isCurrentUser ? ' (You)' : ''}</td>
                     <td class="ytd-matches">${user.nightsPlayed || user.matchCount}</td>
+                    <td class="ytd-score">${user.totalScore || 0}</td>
+                    <td class="ytd-darts">${user.totalDarts || 0}</td>
                     <td class="ytd-average">${user.average}</td>
                     <td class="ytd-tons">${user.tons}</td>
                     <td class="ytd-finishes">${user.finishes}</td>
