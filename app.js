@@ -381,8 +381,9 @@ class DartScoreTracker {
             messageDiv.textContent = 'Sending reset link...';
             messageDiv.style.color = '#9ca3af';
             
-            // Get the full URL including any subdirectory
-            const redirectUrl = window.location.href.split('?')[0].split('#')[0];
+            // Get the base URL and point to reset-password page
+            const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+            const redirectUrl = baseUrl + 'reset-password.html';
             console.log('🔗 Password reset redirect URL:', redirectUrl);
             
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
