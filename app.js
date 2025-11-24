@@ -425,6 +425,13 @@ class DartScoreTracker {
 
         const score = parseInt(this.currentInput);
         if (isNaN(score)) return;
+        
+        // Validate score is between 0 and 180
+        if (score < 0 || score > 180) {
+            alert('Score must be between 0 and 180');
+            this.currentInput = '';
+            return;
+        }
 
         // Add score to current dart box
         const cell = document.querySelector(`.dart-cell[data-game="${this.currentGame}"][data-dart="${this.currentDartBox}"]`);
