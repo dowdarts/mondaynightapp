@@ -32,13 +32,25 @@ class DartScoreTracker {
             }
             
             // Check if this is a password recovery callback
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            const accessToken = hashParams.get('access_token');
-            const type = hashParams.get('type');
+            // Supabase can send params in hash (#) or query (?)
+            console.log('🔍 Full URL:', window.location.href);
+            console.log('🔍 Hash:', window.location.hash);
+            console.log('🔍 Search:', window.location.search);
             
-            console.log('🔍 URL Hash:', window.location.hash);
-            console.log('🔍 Type:', type);
-            console.log('🔍 Access Token:', accessToken ? 'Present' : 'Missing');
+            // Try hash params first
+            let hashParams = new URLSearchParams(window.location.hash.substring(1));
+            let accessToken = hashParams.get('access_token');
+            let type = hashParams.get('type');
+            
+            // If not in hash, try query params
+            if (!accessToken) {
+                const queryParams = new URLSearchParams(window.location.search);
+                accessToken = queryParams.get('access_token');
+                type = queryParams.get('type');
+                console.log('🔍 Checking query params - Type:', type, 'Token:', accessToken ? 'Present' : 'Missing');
+            } else {
+                console.log('🔍 Found in hash - Type:', type, 'Token:', accessToken ? 'Present' : 'Missing');
+            }
             
             if (type === 'recovery' && accessToken) {
                 // User clicked password reset link - show password update form
