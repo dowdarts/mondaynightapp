@@ -2029,25 +2029,62 @@ class DartScoreTracker {
     }
 
     showSuccessAndReset(matches, score, darts, avg, finishes) {
-        const modal = document.createElement('div');
-        modal.className = 'finish-modal';
-        modal.innerHTML = `
-            <div class="finish-modal-content">
-                <h2>✅ Session Saved!</h2>
-                <div style="background: #1e293b; border-radius: 12px; padding: 20px; margin: 20px 0;">
-                    <div style="color: #9ca3af; margin-bottom: 10px;">Matches: ${matches} | Score: ${score} | Darts: ${darts}</div>
-                    <div style="color: #10b981; font-size: 24px; font-weight: bold;">Average: ${avg}</div>
-                    <div style="color: #f97316; margin-top: 10px;">Games Finished: ${finishes}</div>
+        // Update the current tab to show create new session button
+        const currentTab = document.getElementById('currentTab');
+        currentTab.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 500px; padding: 40px;">
+                <div style="background: #16a34a; padding: 30px; border-radius: 16px; text-align: center; max-width: 500px; width: 100%;">
+                    <h2 style="color: #fff; margin-bottom: 20px; font-size: 32px;">✅ Session Saved!</h2>
+                    <div style="background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 20px; margin: 20px 0;">
+                        <div style="color: #fff; margin-bottom: 10px; font-size: 16px;">
+                            <strong>Matches:</strong> ${matches} | <strong>Score:</strong> ${score} | <strong>Darts:</strong> ${darts}
+                        </div>
+                        <div style="color: #fff; font-size: 28px; font-weight: bold; margin: 15px 0;">
+                            Average: ${avg}
+                        </div>
+                        <div style="color: #fbbf24; font-size: 18px; margin-top: 10px;">
+                            🎯 Games Finished: ${finishes}
+                        </div>
+                    </div>
+                    <p style="color: #fff; margin: 20px 0; font-size: 16px;">
+                        Your 5-match session has been saved to the Year to Date leaderboard!
+                    </p>
+                    <button id="createNewSessionBtn" style="
+                        background: #fff;
+                        color: #16a34a;
+                        border: none;
+                        padding: 16px 40px;
+                        border-radius: 12px;
+                        font-size: 20px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        margin-top: 20px;
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                    ">
+                        🆕 CREATE NEW SESSION
+                    </button>
                 </div>
-                <p style="color: #9ca3af; margin-bottom: 20px;">Your 5-match session has been saved to the Year to Date leaderboard!</p>
-                <button class="finish-btn win" id="startFreshBtn">🆕 CREATE NEW SESSION</button>
             </div>
         `;
-        document.body.appendChild(modal);
-
-        document.getElementById('startFreshBtn').addEventListener('click', () => {
-            document.body.removeChild(modal);
+        
+        // Switch to current tab to show the message
+        this.switchTab('current');
+        
+        // Add event listener for create new session button
+        const createBtn = document.getElementById('createNewSessionBtn');
+        createBtn.addEventListener('click', () => {
             this.startNewNight();
+        });
+        
+        // Add hover effects
+        createBtn.addEventListener('mouseenter', (e) => {
+            e.target.style.transform = 'scale(1.05)';
+            e.target.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.3)';
+        });
+        createBtn.addEventListener('mouseleave', (e) => {
+            e.target.style.transform = 'scale(1)';
+            e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
         });
     }
 
