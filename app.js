@@ -36,8 +36,13 @@ class DartScoreTracker {
             const accessToken = hashParams.get('access_token');
             const type = hashParams.get('type');
             
+            console.log('🔍 URL Hash:', window.location.hash);
+            console.log('🔍 Type:', type);
+            console.log('🔍 Access Token:', accessToken ? 'Present' : 'Missing');
+            
             if (type === 'recovery' && accessToken) {
                 // User clicked password reset link - show password update form
+                console.log('✅ Password recovery detected - showing update form');
                 this.showPasswordUpdateForm();
                 return;
             }
