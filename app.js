@@ -314,6 +314,9 @@ class DartScoreTracker {
             
             // Populate session history dropdown on startup
             await this.populateSessionDateDropdown();
+            
+            // Load YTD leaderboard on startup so it's ready
+            await this.updateYTDView();
         }
         
         this.init();
