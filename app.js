@@ -31,6 +31,17 @@ class DartScoreTracker {
                 return;
             }
             
+            // Check if this is a password recovery callback
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const type = hashParams.get('type');
+            
+            if (type === 'recovery' && accessToken) {
+                // User clicked password reset link - show password update form
+                this.showPasswordUpdateForm();
+                return;
+            }
+            
             // Check for existing session
             const { data: { session } } = await supabase.auth.getSession();
             
@@ -346,7 +357,7 @@ class DartScoreTracker {
             messageDiv.style.color = '#9ca3af';
             
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin + '/reset-password.html'
+                redirectTo: `${window.location.origin}${window.location.pathname}`
             });
             
             if (error) {
@@ -366,6 +377,97 @@ class DartScoreTracker {
             document.body.removeChild(modal);
             this.showAuthScreen();
         });
+    }
+
+    showPasswordUpdateForm() {
+        const modal = document.createElement('div');
+        modal.className = 'finish-modal';
+        modal.id = 'passwordUpdateModal';
+        
+        modal.innerHTML = `
+            <div class="finish-modal-content">
+                <h2>🔐 Update Password</h2>
+                <p style="color: #9ca3af; margin-bottom: 20px;">Enter your new password</p>
+                <div style="margin-bottom: 15px;">
+                    <input type="password" id="newPassword" class="edit-score-input" 
+                           placeholder="New Password" 
+                           style="width: 100%; padding: 12px; font-size: 16px; margin-bottom: 10px;">
+                    <input type="password" id="confirmPassword" class="edit-score-input" 
+                           placeholder="Confirm New Password" 
+                           style="width: 100%; padding: 12px; font-size: 16px;">
+                </div>
+                <button class="finish-btn" id="updatePasswordBtn" style="width: 100%; background: #16a34a;">
+                    Update Password
+                </button>
+                <div id="updateMessage" style="color: #ef4444; margin-top: 10px; font-size: 14px; text-align: center;"></div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const messageDiv = document.getElementById('updateMessage');
+        
+        newPasswordInput.focus();
+        
+        const handleUpdate = async () => {
+            const newPassword = newPasswordInput.value.trim();
+            const confirmPassword = confirmPasswordInput.value.trim();
+            
+            if (!newPassword || !confirmPassword) {
+                messageDiv.textContent = 'Please fill in both fields';
+                messageDiv.style.color = '#ef4444';
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                messageDiv.textContent = 'Passwords do not match';
+                messageDiv.style.color = '#ef4444';
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                messageDiv.textContent = 'Password must be at least 6 characters';
+                messageDiv.style.color = '#ef4444';
+                return;
+            }
+            
+            messageDiv.textContent = 'Updating password...';
+            messageDiv.style.color = '#9ca3af';
+            
+            const { error } = await supabase.auth.updateUser({
+                password: newPassword
+            });
+            
+            if (error) {
+                messageDiv.textContent = error.message;
+                messageDiv.style.color = '#ef4444';
+            } else {
+                messageDiv.innerHTML = '✅ Password updated successfully!<br>Redirecting to login...';
+                messageDiv.style.color = '#16a34a';
+                
+                // Clear the hash from URL
+                window.history.replaceState(null, '', window.location.pathname);
+                
+                setTimeout(() => {
+                    document.body.removeChild(modal);
+                    window.location.reload();
+                }, 2000);
+            }
+        };
+        
+        document.getElementById('updatePasswordBtn').addEventListener('click', handleUpdate);
+        
+        // Allow Enter key to submit
+        const handleEnter = (e) => {
+            if (e.key === 'Enter') {
+                handleUpdate();
+            }
+        };
+        
+        newPasswordInput.addEventListener('keydown', handleEnter);
+        confirmPasswordInput.addEventListener('keydown', handleEnter);
     }
 
     getSessionId() {
