@@ -31,36 +31,41 @@ class DartScoreTracker {
                 return;
             }
             
-            // Check if this is a password recovery callback
-            // Supabase can send params in hash (#) or query (?)
             console.log('🔍 Full URL:', window.location.href);
             console.log('🔍 Hash:', window.location.hash);
             console.log('🔍 Search:', window.location.search);
             
-            // Try hash params first
-            let hashParams = new URLSearchParams(window.location.hash.substring(1));
-            let accessToken = hashParams.get('access_token');
-            let type = hashParams.get('type');
+            // First, let Supabase handle any auth callbacks (this processes the OAuth flow)
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
             
-            // If not in hash, try query params
-            if (!accessToken) {
-                const queryParams = new URLSearchParams(window.location.search);
-                accessToken = queryParams.get('access_token');
-                type = queryParams.get('type');
-                console.log('🔍 Checking query params - Type:', type, 'Token:', accessToken ? 'Present' : 'Missing');
-            } else {
-                console.log('🔍 Found in hash - Type:', type, 'Token:', accessToken ? 'Present' : 'Missing');
+            if (sessionError) {
+                console.error('❌ Session error:', sessionError);
             }
             
-            if (type === 'recovery' && accessToken) {
-                // User clicked password reset link - show password update form
+            // Now check if this is a password recovery callback
+            // Check hash params
+            let hashParams = new URLSearchParams(window.location.hash.substring(1));
+            let type = hashParams.get('type');
+            
+            // Check query params if not in hash
+            if (!type) {
+                const queryParams = new URLSearchParams(window.location.search);
+                type = queryParams.get('type');
+            }
+            
+            console.log('🔍 Auth type detected:', type);
+            console.log('🔍 Session exists:', !!session);
+            
+            // If type is recovery, show password update form
+            if (type === 'recovery') {
                 console.log('✅ Password recovery detected - showing update form');
+                // Clear the URL to remove the parameters
+                window.history.replaceState(null, '', window.location.pathname);
                 this.showPasswordUpdateForm();
                 return;
             }
             
             // Check for existing session
-            const { data: { session } } = await supabase.auth.getSession();
             
             if (session) {
                 this.currentUser = session.user;
