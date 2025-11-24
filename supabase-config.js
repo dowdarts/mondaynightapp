@@ -133,7 +133,7 @@ const SupabaseDB = {
     async clearSession(sessionId) {
         if (!supabase) return { error: 'Supabase not initialized' };
         
-        // Only delete the current session state, keep match_history for YTD stats
+        // Only delete the current session state, keep match_history for historical records
         const { error } = await supabase
             .from('dart_sessions')
             .delete()
@@ -199,84 +199,6 @@ const SupabaseDB = {
         
         // sessionId is now the full unique identifier with timestamp
         return await this.loadMatchHistory(sessionId);
-    },
-
-    // Get Year to Date leaderboard from nightly_stats
-    // This aggregates all saved sessions for accurate YTD totals
-    async getYTDLeaderboard() {
-        if (!supabase) return { error: 'Supabase not initialized' };
-        
-        try {
-            // Get all nightly stats from this year
-            const currentYear = new Date().getFullYear();
-            const yearStart = `${currentYear}-01-01`;
-            
-            const { data: sessions, error } = await supabase
-                .from('nightly_stats')
-                .select('*')
-                .gte('session_date', yearStart);
-            
-            if (error) return { data: null, error };
-            
-            console.log(`📊 YTD Leaderboard: Found ${sessions?.length || 0} saved sessions from ${currentYear}`);
-            
-            // Group by user
-            const userStats = {};
-            
-            for (const session of sessions) {
-                const userId = session.user_id;
-                
-                if (!userStats[userId]) {
-                    userStats[userId] = {
-                        userId: userId,
-                        userName: session.user_name,
-                        totalScore: 0,
-                        totalDarts: 0,
-                        totalTons: 0,
-                        totalFinishes: 0,
-                        nightsPlayed: 0
-                    };
-                }
-                
-                // Add session totals
-                userStats[userId].totalScore += session.total_score || 0;
-                userStats[userId].totalDarts += session.total_darts || 0;
-                userStats[userId].totalTons += session.total_tons || 0;
-                userStats[userId].totalFinishes += session.total_finishes || 0;
-                userStats[userId].nightsPlayed += 1;
-            }
-            
-            // Build leaderboard
-            const leaderboard = Object.values(userStats).map(stats => {
-                // Calculate true average from total score / total darts across ALL sessions
-                const overallAvg = stats.totalDarts > 0 
-                    ? parseFloat((stats.totalScore / stats.totalDarts).toFixed(2))
-                    : 0.00;
-                
-                return {
-                    userId: stats.userId,
-                    userName: stats.userName,
-                    nightsPlayed: stats.nightsPlayed,
-                    totalScore: stats.totalScore,
-                    totalDarts: stats.totalDarts,
-                    average: overallAvg,
-                    tons: stats.totalTons,
-                    finishes: stats.totalFinishes
-                };
-            });
-            
-            // Sort by average (descending)
-            leaderboard.sort((a, b) => b.average - a.average);
-            
-            console.log('📊 YTD Leaderboard built:', leaderboard.map(u => 
-                `${u.userName}: ${u.nightsPlayed} nights, ${u.average} avg`
-            ));
-            
-            return { data: leaderboard, error: null };
-        } catch (error) {
-            console.error('YTD Leaderboard error:', error);
-            return { data: null, error };
-        }
     }
 };
 

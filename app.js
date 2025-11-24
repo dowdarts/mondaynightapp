@@ -17,7 +17,6 @@ class DartScoreTracker {
         this.sessionDate = '';
         this.sessionStartTime = null;
         this.currentUser = null;
-        this.ytdRefreshInterval = null;
         
         // Check if user is logged in
         this.checkAuth();
@@ -504,9 +503,6 @@ class DartScoreTracker {
             
             // Populate session history dropdown on startup
             await this.populateSessionDateDropdown();
-            
-            // Load YTD leaderboard on startup so it's ready
-            await this.updateYTDView();
         }
         
         this.init();
@@ -652,9 +648,14 @@ class DartScoreTracker {
     endScore() {
         if (this.matchComplete) return;
 
+        // If there's a pending score input, enter it first
+        if (this.currentInput && this.currentInput.trim() !== '') {
+            this.enterScore(); // This will enter the score and move to next box
+        }
+
         const gameData = this.gameData[this.currentGame];
         
-        // Place "/" in next available box
+        // Place "/" in current box (which is the next box after entering score)
         const cell = document.querySelector(`.dart-cell[data-game="${this.currentGame}"][data-dart="${this.currentDartBox}"]`);
         if (cell) {
             cell.textContent = '/';
@@ -1259,113 +1260,7 @@ class DartScoreTracker {
             document.getElementById('statsTab').classList.add('active');
             document.querySelector('[data-tab="stats"]').classList.add('active');
             this.updateStatsView();
-        } else if (tabName === 'ytd') {
-            document.getElementById('ytdTab').classList.add('active');
-            document.querySelector('[data-tab="ytd"]').classList.add('active');
-            this.updateYTDView();
-            
-            // Auto-refresh YTD leaderboard every 10 seconds while tab is active
-            if (this.ytdRefreshInterval) {
-                clearInterval(this.ytdRefreshInterval);
-            }
-            this.ytdRefreshInterval = setInterval(() => {
-                // Only refresh if YTD tab is still active
-                if (document.getElementById('ytdTab').classList.contains('active')) {
-                    this.updateYTDView(true);
-                }
-            }, 10000);
         }
-        
-        // Clear refresh interval when switching away from YTD tab
-        if (tabName !== 'ytd' && this.ytdRefreshInterval) {
-            clearInterval(this.ytdRefreshInterval);
-            this.ytdRefreshInterval = null;
-        }
-    }
-
-    async updateYTDView(autoRefresh = false) {
-        if (!autoRefresh) {
-            console.log('🏆 updateYTDView() called');
-        }
-        const ytdContent = document.getElementById('ytdContent');
-        if (!autoRefresh) {
-            ytdContent.innerHTML = '<div class="ytd-loading">Loading leaderboard...</div>';
-        }
-        
-        const { data: leaderboard, error } = await SupabaseDB.getYTDLeaderboard();
-        if (!autoRefresh) {
-            console.log('🏆 YTD leaderboard data received:', leaderboard?.length || 0, 'entries');
-        }
-        
-        if (error) {
-            ytdContent.innerHTML = '<div class="ytd-error">Failed to load leaderboard. Please try again.</div>';
-            console.error('YTD error:', error);
-            return;
-        }
-        
-        if (!leaderboard || leaderboard.length === 0) {
-            ytdContent.innerHTML = '<div class="ytd-empty">No stats yet this year. Complete some matches to appear on the leaderboard!</div>';
-            return;
-        }
-        
-        let html = `
-            <div class="ytd-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Name</th>
-                            <th>Nights</th>
-                            <th>Total Score</th>
-                            <th>Total Darts</th>
-                            <th>Average</th>
-                            <th>Tons</th>
-                            <th>Finishes</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-        `;
-        
-        leaderboard.forEach((user, index) => {
-            const rank = index + 1;
-            let rankClass = 'ytd-rank';
-            let rankDisplay = `#${rank}`;
-            
-            if (rank === 1) {
-                rankClass += ' gold';
-                rankDisplay = '🥇';
-            } else if (rank === 2) {
-                rankClass += ' silver';
-                rankDisplay = '🥈';
-            } else if (rank === 3) {
-                rankClass += ' bronze';
-                rankDisplay = '🥉';
-            }
-            
-            const isCurrentUser = user.userId === this.currentUser?.id;
-            const rowClass = isCurrentUser ? 'style="background: rgba(22, 163, 74, 0.1);"' : '';
-            
-            html += `
-                <tr ${rowClass}>
-                    <td class="${rankClass}">${rankDisplay}</td>
-                    <td class="ytd-name">${user.userName}${isCurrentUser ? ' (You)' : ''}</td>
-                    <td class="ytd-matches">${user.nightsPlayed || user.matchCount}</td>
-                    <td class="ytd-score">${user.totalScore || 0}</td>
-                    <td class="ytd-darts">${user.totalDarts || 0}</td>
-                    <td class="ytd-average">${user.average}</td>
-                    <td class="ytd-tons">${user.tons}</td>
-                    <td class="ytd-finishes">${user.finishes}</td>
-                </tr>
-            `;
-        });
-        
-        html += `
-                    </tbody>
-                </table>
-            </div>
-        `;
-        
-        ytdContent.innerHTML = html;
     }
 
     async populateSessionDateDropdown() {
@@ -2103,7 +1998,7 @@ class DartScoreTracker {
             successModal.innerHTML = `
                 <div class="finish-modal-content">
                     <h2 style="color: #16a34a;">✅ Stats Saved!</h2>
-                    <p style="color: #9ca3af; margin: 20px 0;">Your nightly stats have been saved to the Year to Date leaderboard.</p>
+                    <p style="color: #9ca3af; margin: 20px 0;">Your nightly stats have been saved.</p>
                     <button class="finish-btn win" id="startNewNightBtn">🌙 Start New Night</button>
                 </div>
             `;
@@ -2363,7 +2258,7 @@ class DartScoreTracker {
                         </div>
                     </div>
                     <p style="color: #fff; margin: 20px 0; font-size: 16px;">
-                        Your 5-match session has been saved to the Year to Date leaderboard!
+                        Your 5-match session has been saved!
                     </p>
                     <button id="createNewSessionBtn" style="
                         background: #fff;
