@@ -1357,8 +1357,13 @@ class DartScoreTracker {
         
         // Add event listener for Save Session button if it exists
         const saveSessionBtn = document.getElementById('saveSessionBtn');
+        console.log('💾 Save Session Button found:', saveSessionBtn ? 'YES' : 'NO');
+        console.log('📊 Match history length:', this.matchHistory.length);
+        
         if (saveSessionBtn) {
+            console.log('✅ Adding click listener to Save Session button');
             saveSessionBtn.addEventListener('click', () => {
+                console.log('🖱️ Save Session button clicked!');
                 this.collectAndSaveNightStats();
             });
             
@@ -1978,6 +1983,8 @@ class DartScoreTracker {
     }
 
     async collectAndSaveNightStats() {
+        console.log('🎯 collectAndSaveNightStats() called!');
+        
         // Calculate totals from completed matches only
         let totalCompleted = 0;
         let cumulativeScore = 0;
