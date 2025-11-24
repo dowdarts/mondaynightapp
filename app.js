@@ -268,7 +268,8 @@ class DartScoreTracker {
                     data: {
                         first_name: firstName,
                         last_name: lastName
-                    }
+                    },
+                    emailRedirectTo: `${window.location.origin}${window.location.pathname}`
                 }
             });
             
@@ -276,31 +277,15 @@ class DartScoreTracker {
                 messageDiv.textContent = error.message;
                 messageDiv.style.color = '#ef4444';
             } else {
-                // Check if email confirmation is required
-                const identities = data.user?.identities || [];
-                if (identities.length === 0) {
-                    // Email confirmation required
-                    messageDiv.innerHTML = '✅ Account created!<br>Please check your email to verify your account before logging in.';
-                    messageDiv.style.color = '#16a34a';
-                    
-                    setTimeout(() => {
-                        document.body.removeChild(modal);
-                        this.showAuthScreen();
-                    }, 4000);
-                } else {
-                    // No email confirmation required (instant login)
-                    messageDiv.textContent = 'Account created! Logging you in...';
-                    messageDiv.style.color = '#16a34a';
-                    
-                    setTimeout(async () => {
-                        this.currentUser = data.user;
-                        this.userName = `${firstName} ${lastName}`;
-                        this.sessionDate = new Date().toISOString().split('T')[0];
-                        this.sessionId = this.getSessionId();
-                        document.body.removeChild(modal);
-                        await this.initializeApp();
-                    }, 1000);
-                }
+                // Always show confirmation message (Supabase sends confirmation email by default)
+                messageDiv.innerHTML = '✅ Account created successfully!<br><br>📧 <strong>Please check your email</strong> to verify your account before logging in.<br><br>Check your spam folder if you don\'t see it.';
+                messageDiv.style.color = '#16a34a';
+                messageDiv.style.fontSize = '15px';
+                
+                setTimeout(() => {
+                    document.body.removeChild(modal);
+                    this.showAuthScreen();
+                }, 5000);
             }
         });
         
